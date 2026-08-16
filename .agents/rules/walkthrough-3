@@ -1,0 +1,122 @@
+# Walkthrough — Phase 3: Document Ingestion & Evidence Intake
+
+## Executive Summary
+
+Phase 3 implements the production-grade **Document Ingestion & Evidence Intake** pipeline for the **Indian Equity Research Intelligence Terminal**. The pipeline ingests multi-format research materials (Annual Reports, Concall Transcripts, Investor Presentations, Financial Statements, Screener/TradingView screenshots), preserves strict page boundaries, applies deterministic document classification and reporting period extraction, enforces SHA-256 duplicate detection, provides OCR status and confidence gating with optional confidence metrics, and audits two-year annual report baseline readiness.
+
+---
+
+## 1. Core Architecture & Enhancements
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Document Ingestion Pipeline                 │
+├───────────────────────────────┬─────────────────────────────┤
+│         Multi-Format Intake   │    Security & Validation    │
+│  • PDF, PNG, JPG, JPEG, WEBP  │  • Ext / MIME Whitelisting  │
+│  • TXT, CSV (Max 50MB)        │  • Rejection of .exe/.zip   │
+└───────────────┬───────────────┴──────────────┬──────────────┘
+                │                              │
+                ▼                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Deterministic Classification & Hashing             │
+├─────────────────────────────────────────────────────────────┤
+│  • SHA-256 Content Hash for Exact Duplicate Detection       │
+│  • 9-Type Document Classifier + UNKNOWN/Review Fallback     │
+│  • Fiscal Year (FY24/FY23) & Reporting Period Detector      │
+│  • Company Identity & Symbol Consistency Sentinel           │
+└───────────────┬──────────────────────────────┬──────────────┘
+                │                              │
+                ▼                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│         Page-Preserving Extraction & OCR Gating             │
+├─────────────────────────────────────────────────────────────┤
+│  • Multi-Page Boundary Preservation (No flattening)         │
+│  • Machine Text: ocrStatus=NOT_REQUIRED, ocrConfidence=null │
+│  • Scanned Pages: High (>90%), Med (80-90%), Low (<80%)    │
+│  • Low-Confidence OCR flagged as REQUIRES_REVIEW            │
+│  • Screenshots tagged as SCREENSHOT_DERIVED with dimensions │
+└───────────────┬──────────────────────────────┬──────────────┘
+                │                              │
+                ▼                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│            Two-Year Annual Report Intake Gate               │
+├─────────────────────────────────────────────────────────────┤
+│  • Validates FY-1 (Base) and FY-0 (Current) readiness       │
+│  • Flags duplicate fiscal years or missing periods          │
+│  • Gating prerequisite for Phase 4 Comparative Extraction   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### A. Document Types & Identity Model
+- **File**: [`DocumentTypes.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentTypes.ts)
+- `DocumentType`: `ANNUAL_REPORT`, `FINANCIAL_STATEMENTS`, `MDA`, `CONCALL_TRANSCRIPT`, `INVESTOR_PRESENTATION`, `SHAREHOLDING_PATTERN`, `SCREENER_SCREENSHOT`, `TECHNICAL_CHART`, `OTHER`, `UNKNOWN`.
+- `PageOcrStatus`: `NOT_REQUIRED`, `PENDING`, `PROCESSING`, `COMPLETE`, `FAILED`, `REQUIRES_REVIEW`.
+- `ocrConfidence?: number`: Undefined for machine-readable pages (never represented as 0%).
+
+### B. Deterministic Classification & Period Detection
+- **Files**: [`DocumentClassifier.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentClassifier.ts), [`PeriodDetector.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/PeriodDetector.ts)
+- Deterministic regex keyword classification and period extraction (FY24, FY2024, Q3FY24, 2023-24). Reverts safely to `UNKNOWN` when ambiguous.
+
+### C. SHA-256 Hasher & Duplicate Detection
+- **File**: [`DocumentHasher.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentHasher.ts)
+- Prevents accidental duplicate uploads by computing SHA-256 hashes across project materials.
+
+### D. OCR Processor & Page Confidence Gating
+- **File**: [`OcrProcessor.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/OcrProcessor.ts)
+- Enforces strict OCR thresholds (>90% High, 80-90% Medium, <80% Low -> `REQUIRES_REVIEW`). Machine text pages receive `ocrStatus: NOT_REQUIRED` and `ocrConfidence: undefined`.
+
+### E. Two-Year Annual Report Audit Engine
+- **File**: [`TwoYearReportAudit.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/TwoYearReportAudit.ts)
+- Verifies that two distinct consecutive fiscal years exist (FY-1 & FY-0) and warns on duplicate same-year filings.
+
+---
+
+## 2. UI Components & Terminal Experience
+
+### A. Document Ingestion View (`IngestionView.tsx`)
+- **File**: [`IngestionView.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/routes/IngestionView.tsx)
+- Active on route `/ingestion`.
+- Header with Phase 3 badge, Drag & Drop Dropzone, Pipeline Metrics summary cards, and Ingested Evidence Repository table.
+- **"Load 2-Year Research Kit"**: Loads sample materials (FY23 AR, FY24 AR, Q4 concall transcript, Screener screenshot, TradingView chart) with one click.
+
+### B. Two-Year Audit Card (`TwoYearAuditCard.tsx`)
+- Visual card showing FY-1 (Base) and FY-0 (Current) slots, updating dynamically from `BASELINE INCOMPLETE` to `2-YEAR BASELINE READY`.
+
+### C. Evidence Page Inspector Modal (`DocumentPageInspectorModal.tsx`)
+- Allows page-by-page inspection of extracted text layers, machine vs OCR status, measured confidence %, and audit provenance trail.
+
+---
+
+## 3. Test Suite Verification
+
+Vitest tests verify the complete Phase 3 suite:
+
+| Test Suite | Tests | Result | Focus Area |
+| :--- | :---: | :---: | :--- |
+| [`ocrConfidence.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/ocrConfidence.test.ts) | 6 | PASSED | Machine pages (NOT_REQUIRED, undefined confidence), High (>90%), Medium (80-90%), Low (<80% REQUIRES_REVIEW), OCR failure, summary |
+| [`documentClassification.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/documentClassification.test.ts) | 9 | PASSED | 9 document types, keyword matching, ambiguous fallback |
+| [`documentProcessing.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/documentProcessing.test.ts) | 5 | PASSED | Whitelist validation, .exe/.zip rejection, page preservation, screenshot handling |
+| [`duplicateDetection.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/duplicateDetection.test.ts) | 3 | PASSED | SHA-256 content hashing, duplicate filename & hash detection |
+| [`periodDetection.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/periodDetection.test.ts) | 4 | PASSED | Fiscal year extraction (FY24/FY23), quarterly periods, company consistency |
+| [`twoYearAudit.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/twoYearAudit.test.ts) | 3 | PASSED | 2-year baseline readiness, duplicate year warnings, single report warnings |
+| [`ingestionUI.test.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/ingestionUI.test.tsx) | 2 | PASSED | Dropzone rendering, document queue table, Page Inspector modal |
+| [`businessModel.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/businessModel.test.ts) | 13 | PASSED | 19+ business model archetypes, model gating |
+| [`taxonomy.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/taxonomy.test.ts) | 4 | PASSED | Sector definitions & subsectors |
+| [`company.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/company.test.ts) | 5 | PASSED | Company identity validation |
+| [`projectStorage.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/projectStorage.test.ts) | 4 | PASSED | Storage persistence, duplicate project prevention |
+| [`onboardingUI.test.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/onboardingUI.test.tsx) | 4 | PASSED | Modal form inputs, business model selector, error states |
+| [`shell.test.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/shell.test.tsx) | 4 | PASSED | App shell, navigation, ErrorBoundary |
+| **Total** | **66** | **PASSED (100%)** | |
+
+---
+
+## 4. Build & Browser Verification
+
+- **TypeScript Typecheck**: `npm.cmd run typecheck` → **0 errors**.
+- **Production Build**: `npm.cmd run build` → **1833 modules compiled into `dist/` in 2.88s**.
+- **Browser Subagent**: Verified at `http://localhost:5173/`:
+  - Empty ingestion state verified.
+  - Loaded 2-Year Research Kit: 5 documents ingested (`ANNUAL_REPORT` FY23 & FY24, `CONCALL_TRANSCRIPT`, `SCREENER_SCREENSHOT`, `TECHNICAL_CHART`).
+  - Two-Year Baseline card updated to `2-YEAR BASELINE READY`.
+  - Evidence Page Inspector opened and verified page text, OCR status (`NOT REQUIRED (Machine Text)`), and Provenance metadata.
