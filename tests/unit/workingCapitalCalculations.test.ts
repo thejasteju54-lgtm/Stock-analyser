@@ -79,25 +79,46 @@ describe('Phase 5 — Working Capital Activity Days & Strict COGS Policy', () =>
     expect(invDays?.warnings[0]).toContain('Revenue is not substituted');
   });
 
-  it('4. Working Capital Days: computes ((Receivables + Inventory - Payables) / Revenue) * 365', () => {
+  it('4. Working Capital Days (Average WC): computes ((Average Receivables + Average Inventory - Average Payables) / Revenue) * 365', () => {
     const facts = [
       createFact('REVENUE', 437928, 'FY24'),
       createFact('RECEIVABLES', 17097, 'FY24'),
+      createFact('RECEIVABLES', 15000, 'FY23'),
       createFact('INVENTORY', 45000, 'FY24'),
-      createFact('PAYABLES', 75000, 'FY24'), // Payables exceed receivables + inventory (negative working capital)
+      createFact('INVENTORY', 41000, 'FY23'),
+      createFact('PAYABLES', 75000, 'FY24'),
+      createFact('PAYABLES', 70000, 'FY23'),
     ];
 
     const metrics = FinancialCalculationEngine.calculateAllMetrics('proj_1', 'TATAMOTORS', 'AUTO_OEM', facts, 'FY24', 'FY23');
     const wcDays = metrics.find((m) => m.metricCode === 'WORKING_CAPITAL_DAYS');
 
     expect(wcDays?.status).toBe('CALCULATED');
-    // Operating WC = 17097 + 45000 - 75000 = -12903
-    // WC Days = (-12903 / 437928) * 365 = -10.75 -> -10.8 Days
-    expect(wcDays?.value).toBe(-10.8);
+    expect(wcDays?.methodologyId).toBe('WC_AVERAGE_OPERATING_DAYS_V1');
+    // Avg Rec = 16048.5, Avg Inv = 43000, Avg Pay = 72500 -> Avg Op WC = -13451.5
+    // WC Days = (-13451.5 / 437928) * 365 = -11.21 -> -11.2 Days
+    expect(wcDays?.value).toBe(-11.2);
     expect(wcDays?.warnings[0]).toContain('Negative working capital days');
   });
 
-  it('5. Cash Conversion Cycle (CCC): computes Receivable Days + Inventory Days - Payable Days', () => {
+  it('5. Working Capital Days (Missing Opening Balances Fallback): uses Closing WC with explicit warning', () => {
+    const facts = [
+      createFact('REVENUE', 437928, 'FY24'),
+      createFact('RECEIVABLES', 17097, 'FY24'),
+      createFact('INVENTORY', 45000, 'FY24'),
+      createFact('PAYABLES', 75000, 'FY24'),
+    ];
+
+    const metrics = FinancialCalculationEngine.calculateAllMetrics('proj_1', 'TATAMOTORS', 'AUTO_OEM', facts, 'FY24', 'FY23');
+    const wcDays = metrics.find((m) => m.metricCode === 'WORKING_CAPITAL_DAYS');
+
+    expect(wcDays?.status).toBe('CALCULATED');
+    expect(wcDays?.methodologyId).toBe('WC_CLOSING_OPERATING_DAYS_FALLBACK_V1');
+    expect(wcDays?.value).toBe(-10.8);
+    expect(wcDays?.warnings[0]).toContain('FALLBACK_CLOSING_WC_USED');
+  });
+
+  it('6. Cash Conversion Cycle (CCC): computes Receivable Days + Inventory Days - Payable Days', () => {
     const facts = [
       createFact('REVENUE', 437928, 'FY24'),
       createFact('COGS', 280000, 'FY24'),

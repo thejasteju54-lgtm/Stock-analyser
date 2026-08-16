@@ -372,7 +372,7 @@ export class FinancialCalculationEngine {
             warnings: [`Missing CFO or PAT for ${targetFY}.`],
             isApplicableForBusinessModel: true,
           });
-        } else if (patFact.value <= 0) {
+        } else if (patFact.value === 0) {
           results.push({
             metricId: `calc_${companySymbol}_cfo_to_pat_${targetFY}`,
             metricCode: 'CFO_TO_PAT_RATIO',
@@ -386,11 +386,39 @@ export class FinancialCalculationEngine {
             methodologyId: 'CFO_PAT_CONVERSION_V1',
             methodologyVersion: METHODOLOGY_VERSION,
             calculationVersion: CALCULATION_VERSION,
+            cfoPatDiagnostic: 'ZERO_PAT',
             inputFactIds: inputIds,
             inputFactsSummary: summaries,
             calculationTimestamp: new Date().toISOString(),
             status: 'NOT_CALCULABLE',
-            warnings: [`PAT is non-positive (${patFact.value} Cr) in ${targetFY}; CFO/PAT conversion ratio is not economically meaningful.`],
+            warnings: [`PAT is zero in ${targetFY}; CFO/PAT conversion ratio cannot be calculated.`],
+            isApplicableForBusinessModel: true,
+          });
+        } else if (patFact.value < 0) {
+          const diagnostic = cfoFact.value > 0 ? 'CASH_GENERATION_DURING_ACCOUNTING_LOSS' : 'CASH_BURN_DURING_ACCOUNTING_LOSS';
+          const diagWarning = cfoFact.value > 0
+            ? `PAT is negative (${patFact.value} Cr) and CFO is positive (${cfoFact.value} Cr): CASH_GENERATION_DURING_ACCOUNTING_LOSS diagnostic status recorded. Ratio is not calculable.`
+            : `PAT is negative (${patFact.value} Cr) and CFO is negative (${cfoFact.value} Cr): CASH_BURN_DURING_ACCOUNTING_LOSS diagnostic status recorded. Ratio is not calculable.`;
+
+          results.push({
+            metricId: `calc_${companySymbol}_cfo_to_pat_${targetFY}`,
+            metricCode: 'CFO_TO_PAT_RATIO',
+            metricName: 'CFO to PAT Ratio',
+            category: 'CASH_FLOW_QUALITY',
+            unit: 'RATIO',
+            period: targetFY,
+            formulaId: cfoToPatFormula.formulaId,
+            formulaName: cfoToPatFormula.formulaName,
+            formulaExpression: cfoToPatFormula.formulaExpression,
+            methodologyId: 'CFO_PAT_CONVERSION_V1',
+            methodologyVersion: METHODOLOGY_VERSION,
+            calculationVersion: CALCULATION_VERSION,
+            cfoPatDiagnostic: diagnostic,
+            inputFactIds: inputIds,
+            inputFactsSummary: summaries,
+            calculationTimestamp: new Date().toISOString(),
+            status: 'NOT_CALCULABLE',
+            warnings: [diagWarning],
             isApplicableForBusinessModel: true,
           });
         } else {
@@ -409,6 +437,7 @@ export class FinancialCalculationEngine {
             methodologyId: 'CFO_PAT_CONVERSION_V1',
             methodologyVersion: METHODOLOGY_VERSION,
             calculationVersion: CALCULATION_VERSION,
+            cfoPatDiagnostic: 'NORMAL_POSITIVE',
             inputFactIds: inputIds,
             inputFactsSummary: summaries,
             calculationTimestamp: new Date().toISOString(),
@@ -1306,13 +1335,25 @@ export class FinancialCalculationEngine {
           inputIds.push(recFact.factId);
           summaries.push(...toSummary(recFact));
         }
+        if (openRecFact) {
+          inputIds.push(openRecFact.factId);
+          summaries.push(...toSummary(openRecFact));
+        }
         if (invFact) {
           inputIds.push(invFact.factId);
           summaries.push(...toSummary(invFact));
         }
+        if (openInvFact) {
+          inputIds.push(openInvFact.factId);
+          summaries.push(...toSummary(openInvFact));
+        }
         if (payFact) {
           inputIds.push(payFact.factId);
           summaries.push(...toSummary(payFact));
+        }
+        if (openPayFact) {
+          inputIds.push(openPayFact.factId);
+          summaries.push(...toSummary(openPayFact));
         }
         if (revFact) {
           inputIds.push(revFact.factId);
@@ -1332,14 +1373,14 @@ export class FinancialCalculationEngine {
           results.push({
             metricId: `calc_${companySymbol}_working_capital_days_${targetFY}`,
             metricCode: 'WORKING_CAPITAL_DAYS',
-            metricName: 'Working Capital Days',
+            metricName: 'Working Capital Days (Average WC)',
             category: 'WORKING_CAPITAL',
             unit: 'DAYS',
             period: targetFY,
             formulaId: wcDaysFormula.formulaId,
             formulaName: wcDaysFormula.formulaName,
             formulaExpression: wcDaysFormula.formulaExpression,
-            methodologyId: 'WC_OPERATING_DAYS_V1',
+            methodologyId: 'WC_AVERAGE_OPERATING_DAYS_V1',
             methodologyVersion: METHODOLOGY_VERSION,
             calculationVersion: CALCULATION_VERSION,
             inputFactIds: inputIds,
@@ -1353,14 +1394,14 @@ export class FinancialCalculationEngine {
           results.push({
             metricId: `calc_${companySymbol}_working_capital_days_${targetFY}`,
             metricCode: 'WORKING_CAPITAL_DAYS',
-            metricName: 'Working Capital Days',
+            metricName: 'Working Capital Days (Average WC)',
             category: 'WORKING_CAPITAL',
             unit: 'DAYS',
             period: targetFY,
             formulaId: wcDaysFormula.formulaId,
             formulaName: wcDaysFormula.formulaName,
             formulaExpression: wcDaysFormula.formulaExpression,
-            methodologyId: 'WC_OPERATING_DAYS_V1',
+            methodologyId: 'WC_AVERAGE_OPERATING_DAYS_V1',
             methodologyVersion: METHODOLOGY_VERSION,
             calculationVersion: CALCULATION_VERSION,
             inputFactIds: inputIds,
@@ -1371,12 +1412,30 @@ export class FinancialCalculationEngine {
             isApplicableForBusinessModel: true,
           });
         } else {
-          const operatingWC = recFact.value + invFact.value - payFact.value;
-          const wcDays = Math.round(((operatingWC / revFact.value) * 365) * 10) / 10;
+          const hasFullOpening =
+            openRecFact && openRecFact.value !== undefined &&
+            openInvFact && openInvFact.value !== undefined &&
+            openPayFact && openPayFact.value !== undefined;
+
+          const avgRec = openRecFact && openRecFact.value !== undefined ? (openRecFact.value + recFact.value) / 2 : recFact.value;
+          const avgInv = openInvFact && openInvFact.value !== undefined ? (openInvFact.value + invFact.value) / 2 : invFact.value;
+          const avgPay = openPayFact && openPayFact.value !== undefined ? (openPayFact.value + payFact.value) / 2 : payFact.value;
+
+          const avgOperatingWC = avgRec + avgInv - avgPay;
+          const wcDays = Math.round(((avgOperatingWC / revFact.value) * 365) * 10) / 10;
+
+          const warnings: string[] = [];
+          if (!hasFullOpening) {
+            warnings.push('FALLBACK_CLOSING_WC_USED: Some or all opening working capital balances were unavailable; calculated using available balances.');
+          }
+          if (wcDays < 0) {
+            warnings.push('Negative working capital days (favorable cash-generative working capital model).');
+          }
+
           results.push({
             metricId: `calc_${companySymbol}_working_capital_days_${targetFY}`,
             metricCode: 'WORKING_CAPITAL_DAYS',
-            metricName: 'Working Capital Days',
+            metricName: 'Working Capital Days (Average WC)',
             category: 'WORKING_CAPITAL',
             value: wcDays,
             unit: 'DAYS',
@@ -1384,14 +1443,14 @@ export class FinancialCalculationEngine {
             formulaId: wcDaysFormula.formulaId,
             formulaName: wcDaysFormula.formulaName,
             formulaExpression: wcDaysFormula.formulaExpression,
-            methodologyId: 'WC_OPERATING_DAYS_V1',
+            methodologyId: hasFullOpening ? 'WC_AVERAGE_OPERATING_DAYS_V1' : 'WC_CLOSING_OPERATING_DAYS_FALLBACK_V1',
             methodologyVersion: METHODOLOGY_VERSION,
             calculationVersion: CALCULATION_VERSION,
             inputFactIds: inputIds,
             inputFactsSummary: summaries,
             calculationTimestamp: new Date().toISOString(),
             status: 'CALCULATED',
-            warnings: wcDays < 0 ? ['Negative working capital days (favorable cash-generative working capital model).'] : [],
+            warnings,
             isApplicableForBusinessModel: true,
           });
         }

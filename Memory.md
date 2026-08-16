@@ -21,13 +21,13 @@ Phase 5 — Deterministic Financial Calculation Engine (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with pure deterministic Financial Calculation Engine across 6 core categories (YoY Growth with explicit negative/zero base status mapping, Margins with zero/negative denominator safety, Cash Flow Quality with CFO/PAT and FCF Capex formula, Return Metrics with Average Equity ROE default & Closing Equity fallback and Average CE ROCE, Leverage & Solvency with D/E, Net Debt/EBITDA, Interest Coverage, and Working Capital with strict COGS denominator policy).
+- React 19 + TypeScript + Vite terminal with pure deterministic Financial Calculation Engine across 6 core categories (YoY Growth with explicit negative/zero base status mapping, Margins with zero/negative denominator safety, Cash Flow Quality with CFO/PAT diagnostic status and FCF Capex formula, Return Metrics with Average Equity ROE default & Closing Equity fallback and Average CE ROCE, Leverage & Solvency with D/E, Net Debt/EBITDA, Interest Coverage, and Working Capital with average-balance operating WC days and strict COGS denominator policy).
 - Full multi-hop fact provenance linking (`inputFactIds`, document names, page numbers, extracted values, normalized units), business model and economic archetype gating (`LENDING_FINANCIAL` vs `OPERATING_INDUSTRIAL`), dual versioning (`financial-metrics-v1`, `india-equity-methodology-v1`), and interactive audit modal.
 - Phase 5 route `/fundamentals` fully functional with `FinancialCalculationsView`, `CalculatedMetricCard`, `MetricProvenanceModal`, and `BusinessModelGatingBanner`.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
 - Lint: PASSED (0 errors via `npm.cmd run lint`).
-- Unit Tests: 141/141 PASSED across 30 test files (`growthCalculations.test.ts`, `marginCalculations.test.ts`, `cashFlowCalculations.test.ts`, `returnCalculations.test.ts`, `leverageCalculations.test.ts`, `workingCapitalCalculations.test.ts`, `businessModelGating.test.ts`, `calculationProvenance.test.ts`, `calculationUI.test.tsx`, + all previous 21 test suites).
-- Build: PASSED (`npm.cmd run build` transformed 1848 modules into clean production bundle in 9.08s).
+- Unit Tests: 144/144 PASSED across 30 test files (`growthCalculations.test.ts`, `marginCalculations.test.ts`, `cashFlowCalculations.test.ts`, `returnCalculations.test.ts`, `leverageCalculations.test.ts`, `workingCapitalCalculations.test.ts`, `businessModelGating.test.ts`, `calculationProvenance.test.ts`, `calculationUI.test.tsx`, + all previous 21 test suites).
+- Build: PASSED (`npm.cmd run build` transformed 1848 modules into clean production bundle in 3.36s).
 - Browser Runtime: Terminal active at `http://localhost:5173/`.
 
 ## Completed
@@ -37,7 +37,7 @@ Phase 5 — Deterministic Financial Calculation Engine (Complete)
 - Phase 2: Company Identity validation (`Company.ts`), 30+ Sector Taxonomy definitions & subsector mappings (`SectorTaxonomyRegistry.ts`), extensible Business Model Taxonomy & Gated Model Registry (`BusinessModelRegistry.ts`), Research Project state model (`ResearchProject.ts`), LocalStorage session persistence & duplicate protection (`ProjectStorage.ts`), Company Onboarding modal with dynamic model preview (`NewProjectModal.tsx`), multi-project switcher (`ProjectSwitcher.tsx`), and full unit test coverage.
 - Phase 3: Document Ingestion Pipeline (`DocumentIngestionEngine.ts`), Document Classifier (`DocumentClassifier.ts`), SHA-256 Hasher & Duplicate Detector (`DocumentHasher.ts`), Reporting Period & Company Consistency Detector (`PeriodDetector.ts`), OCR Status & Confidence Processor with optional confidence (`OcrProcessor.ts`), Two-Year Annual Report Intake Audit (`TwoYearReportAudit.ts`), and Terminal Ingestion View (`IngestionView.tsx`).
 - Phase 4: Financial Fact & Management Claim domain models (`FinancialFactTypes.ts`), Unit & Currency Normalizer (`UnitNormalizer.ts`), Deterministic Financial Fact Extractor (`FinancialFactExtractor.ts`), Contextual Discrepancy & Contradiction Sentinel (`ContradictionDetector.ts`), Two-Year Side-by-Side Model Alignment (`TwoYearReconciliation.ts`), Evidence Extraction Route (`EvidenceExtractionView.tsx`), Two-Year Reconciled Fact Table (`TwoYearFactTable.tsx`), Management Claims Ledger (`ManagementClaimsLedger.tsx`), Contradiction Alert Banner (`ContradictionAlertBanner.tsx`), and Provenance Audit Modal (`FactProvenanceDrawer.tsx`).
-- Phase 5: Deterministic Financial Calculation Engine (`FinancialCalculationEngine.ts`), centralized Formula Registry with versioning (`FormulaRegistry.ts`), calculation domain types (`CalculationTypes.ts`), business model gating (`BusinessModelGatingBanner.tsx`), calculated metric card (`CalculatedMetricCard.tsx`), multi-hop fact-to-metric provenance modal (`MetricProvenanceModal.tsx`), calculation workspace route (`FinancialCalculationsView.tsx`), and 9 dedicated unit test suites.
+- Phase 5: Deterministic Financial Calculation Engine (`FinancialCalculationEngine.ts`), centralized Formula Registry with versioning (`FormulaRegistry.ts`), calculation domain types (`CalculationTypes.ts`), business model gating (`BusinessModelGatingBanner.tsx`), calculated metric card (`CalculatedMetricCard.tsx`), multi-hop fact-to-metric provenance modal (`MetricProvenanceModal.tsx`), calculation workspace route (`FinancialCalculationsView.tsx`), average-balance working capital days, CFO/PAT negative loss diagnostic statuses (`CASH_GENERATION_DURING_ACCOUNTING_LOSS`, `CASH_BURN_DURING_ACCOUNTING_LOSS`), and 9 dedicated unit test suites.
 
 ## In Progress
 
@@ -48,6 +48,9 @@ Phase 5 — Deterministic Financial Calculation Engine (Complete)
 - Execute Phase 6 according to `Phases.md` when requested.
 
 ## Architecture Decisions
+
+- **Average Balance Alignment for Activity Cycles & WC Days**: Working Capital Days uses Average Operating Working Capital (`Average Receivables + Average Inventory - Average Payables`) divided by Revenue * 365, aligning with Receivable, Inventory, and Payable days.
+- **CFO/PAT Diagnostic Policy on Negative PAT**: When PAT <= 0, conventional ratio is `NOT_CALCULABLE` and explicit diagnostic statuses (`CASH_GENERATION_DURING_ACCOUNTING_LOSS`, `CASH_BURN_DURING_ACCOUNTING_LOSS`, `ZERO_PAT`) are attached while retaining complete fact provenance without subjective commentary.
 
 - **Optional Financial Values & Explicit Availability**: `value?: number` and `originalValue?: number` are strictly optional with explicit `availabilityStatus` (`AVAILABLE`, `NOT_DISCLOSED`, `NOT_FOUND`, `UNREADABLE`, `REQUIRES_REVIEW`). Missing numbers are never represented as zero.
 - **Foreign Currency Protection**: `UnitNormalizer` preserves original foreign currencies (`USD`, `EUR`, `GBP`) without silent conversion unless explicit rate, date, and source metadata are supplied.

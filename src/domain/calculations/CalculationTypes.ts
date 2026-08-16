@@ -42,6 +42,12 @@ export interface InputFactSummary {
   factId: string;
 }
 
+export type CfoPatDiagnostic =
+  | 'CASH_GENERATION_DURING_ACCOUNTING_LOSS'
+  | 'CASH_BURN_DURING_ACCOUNTING_LOSS'
+  | 'NORMAL_POSITIVE'
+  | 'ZERO_PAT';
+
 export interface CalculatedMetric {
   metricId: string;
   metricCode: string;
@@ -57,6 +63,7 @@ export interface CalculatedMetric {
   methodologyVersion: string;
   calculationVersion: string;
   growthStatus?: GrowthStatus;
+  cfoPatDiagnostic?: CfoPatDiagnostic;
   inputFactIds: string[];
   inputFactsSummary: InputFactSummary[];
   calculationTimestamp: string;

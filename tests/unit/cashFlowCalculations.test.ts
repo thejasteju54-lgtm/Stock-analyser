@@ -78,7 +78,7 @@ describe('Phase 5 — Cash Flow Quality & Free Cash Flow (FCF) Calculations', ()
     expect(cfoToPat?.unit).toBe('RATIO');
   });
 
-  it('4. CFO to PAT with Negative PAT: returns NOT_CALCULABLE (loss conversion is not meaningful)', () => {
+  it('4. CFO to PAT with Negative PAT and Positive CFO: returns NOT_CALCULABLE with CASH_GENERATION_DURING_ACCOUNTING_LOSS diagnostic', () => {
     const facts = [
       createFact('CFO', 10000, 'CASH_FLOW'),
       createFact('PAT', -5000, 'INCOME_STATEMENT'),
@@ -89,6 +89,40 @@ describe('Phase 5 — Cash Flow Quality & Free Cash Flow (FCF) Calculations', ()
 
     expect(cfoToPat?.status).toBe('NOT_CALCULABLE');
     expect(cfoToPat?.value).toBeUndefined();
-    expect(cfoToPat?.warnings[0]).toContain('non-positive');
+    expect(cfoToPat?.cfoPatDiagnostic).toBe('CASH_GENERATION_DURING_ACCOUNTING_LOSS');
+    expect(cfoToPat?.warnings[0]).toContain('CASH_GENERATION_DURING_ACCOUNTING_LOSS');
+    expect(cfoToPat?.inputFactIds).toContain('fact_cfo_fy24');
+    expect(cfoToPat?.inputFactIds).toContain('fact_pat_fy24');
+  });
+
+  it('5. CFO to PAT with Negative PAT and Negative CFO: returns NOT_CALCULABLE with CASH_BURN_DURING_ACCOUNTING_LOSS diagnostic', () => {
+    const facts = [
+      createFact('CFO', -8000, 'CASH_FLOW'),
+      createFact('PAT', -5000, 'INCOME_STATEMENT'),
+    ];
+
+    const metrics = FinancialCalculationEngine.calculateAllMetrics('proj_1', 'TATAMOTORS', 'AUTO_OEM', facts, 'FY24');
+    const cfoToPat = metrics.find((m) => m.metricCode === 'CFO_TO_PAT_RATIO');
+
+    expect(cfoToPat?.status).toBe('NOT_CALCULABLE');
+    expect(cfoToPat?.value).toBeUndefined();
+    expect(cfoToPat?.cfoPatDiagnostic).toBe('CASH_BURN_DURING_ACCOUNTING_LOSS');
+    expect(cfoToPat?.warnings[0]).toContain('CASH_BURN_DURING_ACCOUNTING_LOSS');
+    expect(cfoToPat?.inputFactIds).toContain('fact_cfo_fy24');
+    expect(cfoToPat?.inputFactIds).toContain('fact_pat_fy24');
+  });
+
+  it('6. CFO to PAT with Zero PAT: returns NOT_CALCULABLE with ZERO_PAT diagnostic', () => {
+    const facts = [
+      createFact('CFO', 10000, 'CASH_FLOW'),
+      createFact('PAT', 0, 'INCOME_STATEMENT'),
+    ];
+
+    const metrics = FinancialCalculationEngine.calculateAllMetrics('proj_1', 'TATAMOTORS', 'AUTO_OEM', facts, 'FY24');
+    const cfoToPat = metrics.find((m) => m.metricCode === 'CFO_TO_PAT_RATIO');
+
+    expect(cfoToPat?.status).toBe('NOT_CALCULABLE');
+    expect(cfoToPat?.value).toBeUndefined();
+    expect(cfoToPat?.cfoPatDiagnostic).toBe('ZERO_PAT');
   });
 });
