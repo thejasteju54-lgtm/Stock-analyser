@@ -1,5 +1,6 @@
 import { ResearchProject, createResearchProject } from '../models/ResearchProject';
 import { CompanyIdentity, createCompanyEntity } from '../models/Company';
+import { IngestedDocument } from '../ingestion/DocumentTypes';
 
 const STORAGE_KEY_PROJECTS = 'eq_terminal_research_projects_v1';
 const STORAGE_KEY_ACTIVE_PROJECT_ID = 'eq_terminal_active_project_id_v1';
@@ -129,6 +130,70 @@ export class ProjectStorage {
     if (this.getActiveProjectId() === projectId) {
       this.setActiveProject(filtered[0].id);
     }
+  }
+
+  public static getProject(projectId: string): ResearchProject | undefined {
+    return this.listProjects().find((p) => p.id === projectId);
+  }
+
+  public static getDocumentsForProject(projectId: string): IngestedDocument[] {
+    const project = this.getProject(projectId);
+    return project ? project.documents || [] : [];
+  }
+
+  public static addDocumentToProject(projectId: string, document: IngestedDocument): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    const docs = project.documents || [];
+    const updatedDocs = [document, ...docs.filter((d: IngestedDocument) => d.id !== document.id)];
+    const updatedProject: ResearchProject = {
+      ...project,
+      documents: updatedDocs,
+      status: updatedDocs.length > 0 && project.status === 'ONBOARDED' ? 'INGESTING' : project.status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static updateDocumentInProject(projectId: string, document: IngestedDocument): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    const docs = project.documents || [];
+    const updatedDocs = docs.map((d: IngestedDocument) => (d.id === document.id ? document : d));
+    const updatedProject: ResearchProject = {
+      ...project,
+      documents: updatedDocs,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static removeDocumentFromProject(projectId: string, documentId: string): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    const docs = project.documents || [];
+    const updatedDocs = docs.filter((d: IngestedDocument) => d.id !== documentId);
+    const updatedProject: ResearchProject = {
+      ...project,
+      documents: updatedDocs,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
   }
 
   private static saveAllProjects(projects: ResearchProject[]): void {

@@ -394,3 +394,6 @@ export const PhasePlaceholderView: React.FC<PhasePlaceholderViewProps> = ({
     </div>
   );
 };
+
+export { IngestionView } from './IngestionView';
+

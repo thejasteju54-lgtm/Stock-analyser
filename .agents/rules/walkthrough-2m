@@ -1,0 +1,120 @@
+# Walkthrough — Updated Phase 2: Research Project Creation & Extensible Business Model Architecture
+
+## Executive Summary
+
+Phase 2 establishes the foundational entity onboarding and economic classification layers for the **Indian Equity Research Intelligence Terminal**. Following the architectural correction, the system features a **two-dimensional classification architecture**:
+
+1. **Sector Taxonomy** (*"What industry does the company operate in?"* — 30+ Indian sectors)
+2. **Business Model Taxonomy** (*"How does the company economically operate and generate cash?"* — 19+ extensible economic archetypes)
+
+---
+
+## 1. Core Architecture & Enhancements
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Onboarding Terminal                      │
+├───────────────────────────────┬─────────────────────────────┤
+│      Sector Taxonomy          │   Business Model Taxonomy   │
+│  (30+ Indian Industry Sectors)│ (19+ Extensible Archetypes) │
+│  • Banking                    │  • BANKING, NBFC, HFC       │
+│  • NBFC                       │  • MICROFINANCE, INSURANCE  │
+│  • Financial Services         │  • ASSET_MANAGEMENT         │
+│  • IT Services, Pharma        │  • BROKERAGE, STOCK_EXCHANGE│
+│  • Real Estate, REIT, InvIT   │  • REIT, INVIT, COMMODITY   │
+│  • Infrastructure, Power      │  • REAL_ESTATE, UTILITY     │
+└───────────────┬───────────────┴──────────────┬──────────────┘
+                │                              │
+                ▼                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│             Deterministic Gating & Model Registry           │
+├─────────────────────────────────────────────────────────────┤
+│  • Applicable Financial Metrics (e.g. NIM, LTV, NDCF Yield) │
+│  • Gated Forensic Models (e.g. NPA Quality vs Beneish M)    │
+│  • Gated Valuation Models (e.g. P/ABV, NAV, EV/EBITDA, DCF) │
+│  • Economic Archetype & Technical Drivers                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### A. Extensible Business Model Registry
+- **File**: [`BusinessModelRegistry.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/taxonomy/BusinessModelRegistry.ts)
+- **19+ Standard Predefined Archetypes**:
+  - `BANKING` (Commercial & Retail Banks)
+  - `NBFC` (Non-Banking Financial Companies)
+  - `HFC` (Housing Finance Companies)
+  - `MICROFINANCE` (Joint-liability & MFI lenders)
+  - `INSURANCE` (Life & General Underwriters)
+  - `ASSET_MANAGEMENT` (AMCs & Wealth Managers)
+  - `BROKERAGE` (Retail & Institutional Brokers)
+  - `STOCK_EXCHANGE` (Monopoly Market Infrastructure Institutions)
+  - `REAL_ESTATE` (Property Developers)
+  - `REIT` (Real Estate Investment Trusts)
+  - `INVIT` (Infrastructure Investment Trusts)
+  - `PROJECT_INFRA` (Heavy EPC & Road Concessions)
+  - `UTILITY` (Regulated Return Power & Gas Distribution)
+  - `NON_FINANCIAL_OPERATING` (Manufacturing / Consumer / IT)
+  - `COMMODITY` (Metals, Mining, Refining)
+  - `TELECOM` (Telco operators & Tower infra)
+  - `HEALTHCARE` (Hospitals & Diagnostics)
+  - `PHARMA` (Formulations, API, CDMO)
+  - `DIVERSIFIED` (Holding companies & Conglomerates)
+- **Extensible & Safe**: Supports runtime registration of custom models via `registerBusinessModel()`, and fails safely on unknown models without breaking application state.
+
+### B. Sector Taxonomy & Subsector Resolution
+- **File**: [`SectorTaxonomyRegistry.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/taxonomy/SectorTaxonomyRegistry.ts)
+- Maps 30+ sectors and automatically resolves specialized subsectors to appropriate business models:
+  - NBFC → *Housing Finance (HFC)* resolves to `HFC`.
+  - NBFC → *Microfinance (MFI)* resolves to `MICROFINANCE`.
+  - Financial Services → *Asset Management (AMC)* resolves to `ASSET_MANAGEMENT`.
+  - Financial Services → *Stock Exchanges* resolves to `STOCK_EXCHANGE`.
+
+### C. Company Identity Model
+- **File**: [`Company.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/models/Company.ts)
+- Strict validation across Legal Name, Exchange (`NSE` / `BSE`), Symbol, Sector, Subsector, and Business Model.
+
+### D. Research Project State & Persistence
+- **Files**: [`ResearchProject.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/models/ResearchProject.ts), [`ProjectStorage.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/storage/ProjectStorage.ts)
+- Unique collision-resistant ID generation, `localStorage` persistence, duplicate prevention, and clean multi-project switching.
+
+---
+
+## 2. UI Components & User Experience
+
+### A. Company Onboarding Modal (`NewProjectModal.tsx`)
+- **File**: [`NewProjectModal.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/components/project/NewProjectModal.tsx)
+- Automatically suggests the optimal Economic Business Model upon selecting a sector/subsector.
+- Allows analyst override via the Economic Business Model dropdown.
+- Real-time **Live Model Preview** displaying:
+  - Business model description & Economic Archetype badge.
+  - Gated Forensic Models (e.g. `NPA_PCR_QUALITY`, `REST_ASSET_MONITOR` vs `BENEISH_M_SCORE`).
+  - Gated Valuation Frameworks (e.g. `PB_ABV`, `NAV`, `EV_EBITDA`, `DCF`).
+  - Primary Financial Metrics (e.g. `LTV_RATIO`, `NDCF_YIELD`, `ROCE`).
+
+### B. Active Target Profile Card (`OverviewView`)
+- **File**: [`index.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/routes/index.tsx)
+- Shows active company identity, exchange/symbol, sector vertical, business model badge, and gated analysis modules.
+
+---
+
+## 3. Test Suite Verification
+
+Vitest tests verify the complete Phase 2 suite:
+
+| Test Suite | Tests | Result | Focus Area |
+| :--- | :---: | :---: | :--- |
+| [`businessModel.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/businessModel.test.ts) | 13 | PASSED | HFC, MFI, REIT, InvIT, Banking, NBFC, Insurance, Operating, subsector resolution, dynamic registration, safe failures |
+| [`taxonomy.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/taxonomy.test.ts) | 4 | PASSED | 30+ Indian industry verticals, sector mappings |
+| [`company.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/company.test.ts) | 5 | PASSED | Entity validation, invalid symbols, bad sector/subsector combinations |
+| [`projectStorage.test.ts`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/projectStorage.test.ts) | 4 | PASSED | Seed initialization, project persistence, duplicate prevention, active switcher |
+| [`onboardingUI.test.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/onboardingUI.test.tsx) | 4 | PASSED | Accessible form controls, error banners, submission, project switcher |
+| [`shell.test.tsx`](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/shell.test.tsx) | 4 | PASSED | App shell, navigation, 15 route tabs, ErrorBoundary |
+| **Total** | **34** | **PASSED (100%)** | |
+
+---
+
+## 4. Build & Compiler Verification
+
+- **TypeScript Typecheck**: `npm.cmd run typecheck` → **0 errors**.
+- **Production Build**: `npm.cmd run build` → **1822 modules compiled in 2.87s into `dist/`**.
+- **Browser Runtime**: Active at `http://localhost:5173/` with **0 console errors**.
+- **Git Commit**: `fc849d3` (*fix(phase-2): decouple and implement extensible business model taxonomy registry*).

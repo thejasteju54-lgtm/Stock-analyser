@@ -17,38 +17,40 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 2 — Research Project Creation & Company Onboarding (Complete)
+Phase 3 — Document Ingestion & Evidence Intake (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with Indian Company Identity validation, extensible BusinessModelRegistry, Sector Taxonomy registry (30+ sectors, subsectors, gated forensic & valuation models), and Project Lifecycle persistence.
-- Configurable `BusinessModelRegistry` covering all 19+ Indian economic archetypes (BANKING, NBFC, HFC, MICROFINANCE, INSURANCE, ASSET_MANAGEMENT, BROKERAGE, STOCK_EXCHANGE, REAL_ESTATE, REIT, INVIT, PROJECT_INFRA, UTILITY, NON_FINANCIAL_OPERATING, COMMODITY, TELECOM, HEALTHCARE, PHARMA, DIVERSIFIED) with dynamic extensibility (`registerBusinessModel`).
-- Project creation modal (`NewProjectModal`) with interactive Business Model selector and dynamic model preview, multi-project switcher (`ProjectSwitcher`), active profile cards, and storage engine (`ProjectStorage`) fully functional.
+- React 19 + TypeScript + Vite terminal with multi-format Document Ingestion pipeline, Deterministic Document Classifier, SHA-256 Duplicate Detection, Page-Preserving Extraction, OCR Confidence Gating (>90 High, 80-90 Medium, <80 Low -> REQUIRES_REVIEW), Screenshot Handling (`SCREENSHOT_DERIVED`), and Two-Year Annual Report Intake Audit.
+- Phase 3 route `/ingestion` fully functional with terminal dropzone (`DocumentDropzone`), Two-Year Audit Card (`TwoYearAuditCard`), Ingested Evidence Queue Table (`DocumentQueueTable`), Page Inspector Modal (`DocumentPageInspectorModal`), and 2-Year Sample Research Kit loader.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
-- Unit Tests: 34/34 PASSED across 6 test files (`taxonomy.test.ts`, `company.test.ts`, `businessModel.test.ts`, `projectStorage.test.ts`, `onboardingUI.test.tsx`, `shell.test.tsx`).
-- Build: PASSED (`npm.cmd run build` transformed 1822 modules into clean production bundle in 2.87s).
-- Browser Runtime: Terminal active and verified at `http://localhost:5173/`.
+- Unit Tests: 66/66 PASSED across 13 test files (`ocrConfidence.test.ts`, `documentClassification.test.ts`, `documentProcessing.test.ts`, `duplicateDetection.test.ts`, `periodDetection.test.ts`, `twoYearAudit.test.ts`, `ingestionUI.test.tsx`, `businessModel.test.ts`, `taxonomy.test.ts`, `company.test.ts`, `projectStorage.test.ts`, `onboardingUI.test.tsx`, `shell.test.tsx`).
+- Build: PASSED (`npm.cmd run build` transformed 1833 modules into clean production bundle in 2.88s).
+- Browser Runtime: Terminal active and verified at `http://localhost:5173/` (sample kit loaded, two-year baseline ready, page inspector verified).
 
 ## Completed
 
 - Phase 0: Repository intelligence & architectural compliance review.
 - Phase 1: Application shell, high-density terminal tokens, persistent SideNav, TopBar, StatusBar, ErrorBoundary, route placeholders, UI primitives (`Badge`, `Card`, `Button`).
 - Phase 2: Company Identity validation (`Company.ts`), 30+ Sector Taxonomy definitions & subsector mappings (`SectorTaxonomyRegistry.ts`), extensible Business Model Taxonomy & Gated Model Registry (`BusinessModelRegistry.ts`), Research Project state model (`ResearchProject.ts`), LocalStorage session persistence & duplicate protection (`ProjectStorage.ts`), Company Onboarding modal with dynamic model preview (`NewProjectModal.tsx`), multi-project switcher (`ProjectSwitcher.tsx`), and full unit test coverage.
+- Phase 3: Document Ingestion Pipeline (`DocumentIngestionEngine.ts`), Document Classifier (`DocumentClassifier.ts`), SHA-256 Hasher & Duplicate Detector (`DocumentHasher.ts`), Reporting Period & Company Consistency Detector (`PeriodDetector.ts`), OCR Status & Confidence Processor with optional confidence (`OcrProcessor.ts`), Two-Year Annual Report Intake Audit (`TwoYearReportAudit.ts`), and Terminal Ingestion View (`IngestionView.tsx`).
 
 ## In Progress
 
-- Ready for Phase 3: Document Ingestion Pipeline (PDF.js parsing, canvas OCR, classification, metadata extraction).
+- Ready for Phase 4: Structured Evidence Extraction Review (2-Year Model Normalizer, financial statement table extraction, provenance tagging, contradiction detection).
 
 ## Next Action
 
-- Execute Phase 3 according to `Phases.md` when requested.
+- Execute Phase 4 according to `Phases.md` when requested.
 
 ## Architecture Decisions
 
-- **Business Model Taxonomy Registry**: Decoupled from Sector taxonomy to represent *how* a company economically operates (e.g. `HFC`, `MICROFINANCE`, `REIT`, `INVIT`, `BANKING`, `NON_FINANCIAL_OPERATING`) versus *what industry* it belongs to. Supports dynamic registration, economic archetypes, applicable financial metrics, gated forensic checks (e.g. `NPA_PCR_QUALITY`, `NAV_DISCOUNT_MONITOR`, `BENEISH_M_SCORE`), and sector-aware valuation models (`PB_ABV`, `NAV`, `EMBEDDED_VALUE`, `EV_EBITDA`).
-- **Sector Taxonomy Registry**: Extensible lookup mapping 30+ Indian sectors to default and subsector-specialized business models.
-- **Identity Disambiguation**: Company identity strictly requires Legal Name, Symbol (1-20 alphanumeric/&/-), Exchange (`NSE` | `BSE`), Sector, Subsector, and validated Business Model before analysis can begin.
-- **Persistence & Duplicate Control**: `ProjectStorage` preserves project history in `localStorage` with seed fallback and guards against duplicate exchange+symbol collisions.
+- **Document Identity & Provenance**: Every document receives a deterministic ID (`doc_<symbol>_<timestamp>_<hash>`), SHA-256 content hash, explicit provenance source (`PRIMARY_SOURCE_DERIVED` vs `SCREENSHOT_DERIVED`), reporting period, and company verification status.
+- **Page Boundary Preservation**: Ingestion pipeline never flattens multi-page PDFs into untraceable strings; each page is stored with page numbers, text layers, OCR flags, and confidence scores.
+- **OCR Status & Confidence Architecture**: `ocrConfidence?: number` is undefined for machine-readable pages (never represented as 0%), and maps into `NOT_REQUIRED`, `COMPLETE`, `REQUIRES_REVIEW` (<80%), or `FAILED`.
+- **Two-Year Annual Report Intake Gate**: Audits project documents for FY-1 (Base) and FY-0 (Current) annual reports, warning on duplicate years or missing periods before downstream extraction is unlocked.
+- **Business Model Taxonomy Registry**: Decoupled from Sector taxonomy to represent *how* a company economically operates (19+ extensible archetypes).
+- **Persistence & Duplicate Control**: `ProjectStorage` preserves project documents and prevents duplicate upload collisions.
 
 ## Important Dependencies Added
 
@@ -76,7 +78,7 @@ Phase 2 — Research Project Creation & Company Onboarding (Complete)
 
 ## Tests
 
-Unit: 34 passed / 34 total (100%)
+Unit: 66 passed / 66 total (100%)
 Integration: Scoped to Phase 16
 E2E: Scoped to Phase 16
 Typecheck: Passed (0 errors)

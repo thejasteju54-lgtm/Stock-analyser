@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -106,9 +106,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 2,
+    activePhase: 3,
     dataQualityStatus: 'PENDING',
-    memoryState: 'PHASE_2_ONBOARDING_ACTIVE',
+    memoryState: 'PHASE_3_INGESTION_ACTIVE',
   });
 
   // Re-sync active project if needed
@@ -152,6 +152,12 @@ export const App: React.FC = () => {
               activeProject={activeProject}
               onNavigate={handleRouteChange}
               onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
+              onProjectChange={handleProjectChange}
+            />
+          ) : activeRoute === 'ingestion' ? (
+            <IngestionView
+              activeProject={activeProject}
+              onNavigate={handleRouteChange}
               onProjectChange={handleProjectChange}
             />
           ) : (

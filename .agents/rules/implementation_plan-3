@@ -1,0 +1,132 @@
+# Implementation Plan — Phase 3: Document Ingestion & Evidence Intake
+
+Execute Phase 3 of the Indian Equity Research Intelligence Terminal in strict accordance with [Phases.md](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/Phases.md), [PRD.md](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/PRD.md), [Architecture.md](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/Architecture.md), and [Rules.md](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/Rules.md).
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Phase 3 Scope (Ingestion & Evidence Intake Only)**:
+> - Multi-format ingestion: PDF, PNG, JPG, JPEG, WebP, TXT, CSV with strict validation and rejection of unsafe/unsupported files.
+> - Stable Document Identity & Provenance metadata (`document_id`, `file_hash`, `source`, `reporting_period`, `provenanceSourceType`).
+> - Deterministic Document Classifier (Annual Report, Financial Statements, MDA, Concall, Investor Presentation, Shareholding, Screener screenshot, Technical chart, Other, Unknown/Requires Review).
+> - SHA-256 based duplicate detection.
+> - Page-preserving PDF/Image ingestion pipeline with scanned page detection.
+> - OCR confidence gating (>90% High, 80-90% Medium, <80% Low with `REQUIRES_REVIEW` flag).
+> - Screenshot handling as first-class evidence (`SCREENSHOT_DERIVED` tag, dimension tracking).
+> - Two-Year Annual Report Intake Audit (checks FY-1 and FY-0 presence, duplicate year warnings, company identity consistency).
+> - Real-time terminal ingestion interface with drag-and-drop intake, queue monitor, and page-by-page inspector.
+> - **CRITICAL**: No financial analysis, calculations, or downstream engines are executed in Phase 3.
+
+---
+
+## Proposed Changes
+
+### Domain Models & Pipeline (`src/domain/ingestion/`)
+
+#### [NEW] [DocumentTypes.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentTypes.ts)
+- Define `DocumentType`: `'ANNUAL_REPORT' | 'FINANCIAL_STATEMENTS' | 'MDA' | 'CONCALL_TRANSCRIPT' | 'INVESTOR_PRESENTATION' | 'SHAREHOLDING_PATTERN' | 'SCREENER_SCREENSHOT' | 'TECHNICAL_CHART' | 'OTHER' | 'UNKNOWN'`
+- Define `ProcessingStatus`: `'UPLOADED' | 'VALIDATING' | 'CLASSIFYING' | 'PAGE_EXTRACTING' | 'OCR_REQUIRED' | 'OCR_PROCESSING' | 'VERIFYING' | 'READY' | 'FAILED' | 'REQUIRES_REVIEW'`
+- Define `ExtractionStatus`: `'PENDING' | 'PARTIAL' | 'COMPLETE' | 'FAILED'`
+- Define `ProvenanceSourceType`: `'PRIMARY_SOURCE_DERIVED' | 'SCREENSHOT_DERIVED'`
+- Define `ReportingPeriod`: `{ fiscalYear?: string; quarter?: string; periodType: 'ANNUAL' | 'QUARTERLY' | 'TRAILING_12M' | 'OTHER'; isIdentifiable: boolean; rawPeriodString?: string }`
+- Define `DocumentPage`: `{ pageNumber: number; hasText: boolean; isScanned: boolean; textLength: number; textPreview: string; ocrApplied: boolean; ocrConfidence: number; ocrText?: string }`
+- Define `IngestedDocument`: full provenance entity with `id`, `projectId`, `filename`, `fileHash`, `mimeType`, `sizeBytes`, `documentType`, `provenanceSourceType`, `reportingPeriod`, `processingStatus`, `ocrStatus`, `pages`, `dimensions`, `validationErrors`, `createdAt`.
+
+#### [NEW] [DocumentClassifier.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentClassifier.ts)
+- Deterministic heuristic keyword and metadata classifier.
+- Classifies based on filename, mimeType, and content signatures.
+- Reverts to `'UNKNOWN'` with `requiresReview: true` if confidence is below threshold.
+
+#### [NEW] [PeriodDetector.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/PeriodDetector.ts)
+- Deterministic reporting period and fiscal year extractor (e.g. FY24, FY2024, Q3FY24, 2023-2024).
+- Checks consistency against company target symbol and name.
+
+#### [NEW] [DocumentHasher.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentHasher.ts)
+- Deterministic file hashing and duplicate detection across the research project document repository.
+
+#### [NEW] [DocumentIngestionEngine.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/DocumentIngestionEngine.ts)
+- Coordinates ingestion lifecycle:
+  1. Validate file format, MIME type, and size (max 50MB).
+  2. Compute hash and detect duplicate in project.
+  3. Classify document type and detect period.
+  4. Parse pages (distinguish machine-readable text vs scanned images).
+  5. Apply OCR gating and confidence scoring (>90% High, 80-90% Medium, <80% Low).
+  6. Return complete `IngestedDocument` entity.
+
+#### [NEW] [TwoYearReportAudit.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/ingestion/TwoYearReportAudit.ts)
+- Audits annual reports in the project for 2-year model readiness:
+  - Detects if 2 distinct fiscal years exist (e.g. FY23 & FY24).
+  - Flags duplicate year uploads (e.g. two FY24 reports).
+  - Flags missing year or unidentifiable periods.
+  - Flags company name inconsistencies.
+
+#### [MODIFY] [ResearchProject.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/models/ResearchProject.ts)
+- Extend `ResearchProject` with `documents: IngestedDocument[]`.
+
+#### [MODIFY] [ProjectStorage.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/domain/storage/ProjectStorage.ts)
+- Add `addDocumentToProject(projectId, doc)`, `updateDocumentInProject(projectId, doc)`, `removeDocumentFromProject(projectId, docId)`, and `getDocumentsForProject(projectId)`.
+
+---
+
+### UI Components (`src/components/ingestion/`, `src/routes/`)
+
+#### [NEW] [DocumentDropzone.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/components/ingestion/DocumentDropzone.tsx)
+- Terminal drag-and-drop file upload with format restrictions, immediate validation, and progress indicators.
+
+#### [NEW] [DocumentQueueTable.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/components/ingestion/DocumentQueueTable.tsx)
+- High-density terminal table showing all documents, classification badges, periods, processing status, OCR confidence, and actions.
+
+#### [NEW] [DocumentPageInspectorModal.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/components/ingestion/DocumentPageInspectorModal.tsx)
+- Modal allowing analysts to inspect page-by-page text, OCR confidence breakdown, and provenance metadata.
+
+#### [NEW] [TwoYearAuditCard.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/components/ingestion/TwoYearAuditCard.tsx)
+- Visual card showing two-year annual report intake status (FY-1 and FY-0) and validation warnings.
+
+#### [NEW] [IngestionView.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/routes/IngestionView.tsx)
+- Complete Document Ingestion View mounted at route `ingestion`.
+
+#### [MODIFY] [App.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/src/App.tsx)
+- Route `ingestion` connects directly to `IngestionView`.
+
+---
+
+### Test Suite (`tests/unit/`)
+
+#### [NEW] [tests/unit/documentClassification.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/documentClassification.test.ts)
+- Test classification of Annual Reports, Concalls, Presentations, Screener screenshots, Charts, and Unknowns.
+
+#### [NEW] [tests/unit/documentProcessing.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/documentProcessing.test.ts)
+- Test PDF page parsing, machine-readable vs scanned page detection, and format rejection (.exe, .zip, corrupted files).
+
+#### [NEW] [tests/unit/duplicateDetection.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/duplicateDetection.test.ts)
+- Test SHA-256 duplicate detection and repeated upload warnings.
+
+#### [NEW] [tests/unit/periodDetection.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/periodDetection.test.ts)
+- Test FY24, FY23, Q3FY24, 2023-24 extraction and company consistency checks.
+
+#### [NEW] [tests/unit/ocrConfidence.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/ocrConfidence.test.ts)
+- Test High (>90%), Medium (80-90%), and Low (<80% `REQUIRES_REVIEW`) OCR confidence handling.
+
+#### [NEW] [tests/unit/twoYearAudit.test.ts](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/twoYearAudit.test.ts)
+- Test 2-year annual report intake validation (FY23+FY24 valid, duplicate FY24 warning, missing year warning).
+
+#### [NEW] [tests/unit/ingestionUI.test.tsx](file:///c:/Users/Thejas/OneDrive/Desktop/stock%20analyser/tests/unit/ingestionUI.test.tsx)
+- Test IngestionView rendering, file drop, queue table updates, and audit card warnings.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run `npm.cmd test -- --run` to verify all new and existing unit tests pass 100%.
+- Run `npm.cmd run typecheck` to ensure 0 TypeScript compiler errors.
+- Run `npm.cmd run build` to ensure production bundle compiles cleanly.
+
+### Manual / Browser Verification
+- Open `http://localhost:5173/` and navigate to Document Ingestion (`/ingestion`).
+- Upload FY23 Annual Report and FY24 Annual Report — verify two-year audit turns GREEN.
+- Upload duplicate FY24 report — verify duplicate detection warning.
+- Upload Screener Screenshot — verify `SCREENSHOT_DERIVED` tag and dimensions.
+- Upload Technical Chart — verify classification as `TECHNICAL_CHART`.
+- Upload unsupported `.exe` / `.zip` file — verify explicit rejection error banner.
+- Open Page Inspector — verify page-by-page text and provenance metadata.

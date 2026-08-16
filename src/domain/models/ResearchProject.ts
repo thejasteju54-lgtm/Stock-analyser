@@ -1,4 +1,5 @@
 import { CompanyIdentity } from './Company';
+import { IngestedDocument } from '../ingestion/DocumentTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -20,6 +21,7 @@ export interface ResearchProject {
   name: string; // e.g. "Tata Motors - FY23/24 Deep Research"
   company: CompanyIdentity;
   status: ProjectLifecycleStatus;
+  documents: IngestedDocument[];
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +35,7 @@ export function createResearchProject(params: {
   targetInvestmentHorizon?: '1_YEAR' | '3_YEARS' | '5_PLUS_YEARS';
   primaryResearchObjective?: string;
   sourceFilingYears?: string[];
+  documents?: IngestedDocument[];
 }): ResearchProject {
   const now = new Date().toISOString();
   const projectName =
@@ -44,6 +47,7 @@ export function createResearchProject(params: {
     name: projectName,
     company: params.company,
     status: 'ONBOARDED',
+    documents: params.documents || [],
     metadata: {
       analystNotes: params.analystNotes?.trim() || '',
       targetInvestmentHorizon: params.targetInvestmentHorizon || '3_YEARS',
