@@ -8,18 +8,36 @@ import {
   Database,
   Lock,
   Code2,
+  Building,
+  Plus,
+  Scale,
+  Calculator,
 } from 'lucide-react';
-import { TerminalRoute, CompanyEntitySummary } from '../types';
+import { TerminalRoute } from '../types';
+import { ResearchProject } from '../domain/models/ResearchProject';
+import { getSectorDefinition } from '../domain/taxonomy/SectorTaxonomyRegistry';
+import { ProjectStorage } from '../domain/storage/ProjectStorage';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 
 interface RouteViewProps {
-  company: CompanyEntitySummary | null;
+  activeProject: ResearchProject | null;
   onNavigate: (route: TerminalRoute) => void;
+  onOpenNewProjectModal: () => void;
+  onProjectChange: (project: ResearchProject) => void;
 }
 
-export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) => {
+export const OverviewView: React.FC<RouteViewProps> = ({
+  activeProject,
+  onNavigate,
+  onOpenNewProjectModal,
+  onProjectChange,
+}) => {
+  const company = activeProject?.company;
+  const sectorDef = company ? getSectorDefinition(company.sector) : undefined;
+  const allProjects = ProjectStorage.listProjects();
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} id="view-overview">
       {/* Welcome & Terminal Banner */}
@@ -40,7 +58,7 @@ export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) 
               Indian Equity Research Intelligence Terminal
             </h1>
             <Badge variant="cyan" icon={<ShieldCheck size={11} />}>
-              Phase 1 Live
+              Phase 2 Active
             </Badge>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', maxWidth: '780px' }}>
@@ -49,6 +67,14 @@ export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) 
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            size="md"
+            icon={<Plus size={13} />}
+            onClick={onOpenNewProjectModal}
+            id="overview-new-project-btn"
+          >
+            New Company (P2)
+          </Button>
           <Button
             variant="primary"
             icon={<ArrowRight size={13} />}
@@ -59,7 +85,88 @@ export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) 
         </div>
       </div>
 
-      {/* Grid: System Pillars & Terminal Specifications */}
+      {/* Row 1: Active Target Taxonomic Profile & Gated Models */}
+      {company && sectorDef && (
+        <Card
+          title={`Active Target Profile: ${company.legalName}`}
+          icon={<Building size={14} color="#38bdf8" />}
+          action={
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <Badge variant="cyan">{company.exchange}:{company.symbol}</Badge>
+              <Badge variant="bullish">STATUS: {activeProject.status}</Badge>
+            </div>
+          }
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+            {/* Identity & Structure */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
+                Corporate Taxonomy & Classification
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Sector:</span>
+                <strong style={{ color: 'var(--text-primary)' }}>{company.sector}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Subsector Vertical:</span>
+                <span style={{ color: 'var(--text-primary)' }}>{company.subsector}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Business Model:</span>
+                <Badge variant="neutral">{company.businessModel}</Badge>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Market Cap Category:</span>
+                <span style={{ color: 'var(--color-brand)' }}>{company.marketCapCategory.replace('_', ' ')}</span>
+              </div>
+              {company.isin && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>ISIN:</span>
+                  <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>{company.isin}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Gated Forensic Frameworks */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
+                <Scale size={13} color="#f59e0b" />
+                <span>Applicable Forensic Engines (Gated)</span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                {sectorDef.description}
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                {sectorDef.applicableForensicModels.map((m) => (
+                  <Badge key={m} variant="neutral">
+                    {m}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Gated Valuation Frameworks */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
+                <Calculator size={13} color="#10b981" />
+                <span>Applicable Valuation Models (Gated)</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {sectorDef.applicableValuationModels.map((v) => (
+                  <Badge key={v} variant="bullish">
+                    {v}
+                  </Badge>
+                ))}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Horizon: <strong>{activeProject.metadata.targetInvestmentHorizon.replace('_', ' ')}</strong>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Row 2: Architecture Status & Project Library */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
         {/* Core Architecture Status */}
         <Card
@@ -69,8 +176,8 @@ export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) 
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Design System:</span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>High-Density Dark Terminal</span>
+              <span style={{ color: 'var(--text-secondary)' }}>Sector Registry:</span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8' }}>30+ Verticals (Extensible)</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: '1px solid var(--border-subtle)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Calculation Model:</span>
@@ -87,60 +194,76 @@ export const OverviewView: React.FC<RouteViewProps> = ({ company, onNavigate }) 
           </div>
         </Card>
 
-        {/* Active Research Target Context */}
+        {/* Research Project Library */}
         <Card
-          title="Active Research Context"
+          title={`Research Project Library (${allProjects.length})`}
           icon={<Database size={14} color="#f59e0b" />}
           action={
-            company ? (
-              <Badge variant="cyan">{company.exchange}:{company.symbol}</Badge>
-            ) : (
-              <Badge variant="neutral">STANDBY</Badge>
-            )
+            <Button size="sm" icon={<Plus size={11} />} onClick={onOpenNewProjectModal}>
+              Onboard
+            </Button>
           }
         >
-          {company ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{company.name}</div>
-              <div style={{ color: 'var(--text-secondary)', display: 'flex', gap: '8px' }}>
-                <span>Sector: <strong>{company.sector}</strong></span>
-                <span>•</span>
-                <span>Subsector: <strong>{company.subsector}</strong></span>
-              </div>
-              <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
-                <Badge variant="neutral">{company.marketCapCategory.replace('_', ' ')}</Badge>
-                <Badge variant="bullish">2-Year Audit Pipeline</Badge>
-              </div>
-            </div>
-          ) : (
-            <div style={{ color: 'var(--text-muted)', fontSize: '12px', padding: '8px 0' }}>
-              No research project active. Select or create a company research profile in Phase 2.
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '150px', overflowY: 'auto' }}>
+            {allProjects.map((p) => {
+              const isCurrent = p.id === activeProject?.id;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    ProjectStorage.setActiveProject(p.id);
+                    onProjectChange(ProjectStorage.getActiveProject());
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px 8px',
+                    background: isCurrent ? 'var(--bg-surface-active)' : 'var(--bg-surface-raised)',
+                    border: isCurrent ? '1px solid #38bdf8' : '1px solid var(--border-subtle)',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: isCurrent ? 700 : 500, fontSize: '11px', color: 'var(--text-primary)' }}>
+                      {p.company.displayName}
+                    </span>
+                    <span className="tabular-nums" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      ({p.company.exchange}:{p.company.symbol})
+                    </span>
+                  </div>
+                  <Badge variant={isCurrent ? 'cyan' : 'neutral'}>
+                    {p.company.sector}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
         {/* 20-Phase Engine Roadmap Progress */}
         <Card
           title="Engine Pipeline Status"
           icon={<Activity size={14} color="#10b981" />}
-          action={<Badge variant="neutral">PHASE 1 / 20</Badge>}
+          action={<Badge variant="neutral">PHASE 2 / 20</Badge>}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
               <span>[✓] P00: REPOSITORY INTELLIGENCE</span>
               <span>COMPLETE</span>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+              <span>[✓] P01: APPLICATION SHELL & TOKENS</span>
+              <span>COMPLETE</span>
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#38bdf8', fontWeight: 600 }}>
-              <span>[●] P01: APPLICATION SHELL & TOKENS</span>
+              <span>[●] P02: RESEARCH ONBOARDING & TAXONOMY</span>
               <span>ACTIVE</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-              <span>[ ] P02: RESEARCH PROJECT ONBOARDING</span>
-              <span>NEXT</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
               <span>[ ] P03: MULTI-STAGE INGESTION & OCR</span>
-              <span>QUEUED</span>
+              <span>NEXT</span>
             </div>
           </div>
         </Card>

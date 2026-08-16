@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ShieldCheck, Database, Clock } from 'lucide-react';
+import { Activity, ShieldCheck, Database, Clock, Plus } from 'lucide-react';
 import { Badge } from '../common/Badge';
-import { CompanyEntitySummary, SystemStatus } from '../../types';
+import { Button } from '../common/Button';
+import { SystemStatus } from '../../types';
+import { ResearchProject } from '../../domain/models/ResearchProject';
+import { ProjectSwitcher } from '../project/ProjectSwitcher';
 
 interface TopBarProps {
-  company: CompanyEntitySummary | null;
+  activeProject: ResearchProject | null;
   systemStatus: SystemStatus;
+  onProjectChange: (project: ResearchProject) => void;
+  onOpenNewProjectModal: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ company, systemStatus }) => {
+export const TopBar: React.FC<TopBarProps> = ({
+  activeProject,
+  systemStatus,
+  onProjectChange,
+  onOpenNewProjectModal,
+}) => {
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
@@ -69,46 +79,33 @@ export const TopBar: React.FC<TopBarProps> = ({ company, systemStatus }) => {
         </Badge>
       </div>
 
-      {/* Active Company Context */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          background: 'var(--bg-surface-raised)',
-          padding: '4px 12px',
-          borderRadius: '4px',
-          border: '1px solid var(--border-subtle)',
-        }}
-        id="active-company-context"
-      >
-        {company ? (
-          <>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '12px' }}>
-              {company.name}
-            </span>
-            <span
-              className="tabular-nums"
-              style={{
-                color: 'var(--color-brand)',
-                fontSize: '11px',
-                padding: '1px 5px',
-                background: 'rgba(56, 189, 248, 0.1)',
-                borderRadius: '2px',
-              }}
-            >
-              {company.exchange}:{company.symbol}
-            </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-              {company.sector} / {company.subsector}
-            </span>
-            <Badge variant="neutral">{company.marketCapCategory.replace('_', ' ')}</Badge>
-          </>
+      {/* Active Project Switcher & Company Context */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {activeProject ? (
+          <ProjectSwitcher
+            activeProject={activeProject}
+            onProjectChange={onProjectChange}
+            onOpenNewProjectModal={onOpenNewProjectModal}
+          />
         ) : (
-          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-            No Company Loaded • Ready for Ingestion
-          </span>
+          <Button
+            size="sm"
+            variant="primary"
+            icon={<Plus size={11} />}
+            onClick={onOpenNewProjectModal}
+          >
+            Create Research Project
+          </Button>
         )}
+
+        <Button
+          size="sm"
+          icon={<Plus size={11} />}
+          onClick={onOpenNewProjectModal}
+          id="topbar-new-project-btn"
+        >
+          New Company (P2)
+        </Button>
       </div>
 
       {/* Right Controls: Market Time & Engine Status */}
@@ -142,7 +139,7 @@ export const TopBar: React.FC<TopBarProps> = ({ company, systemStatus }) => {
         </div>
 
         <Badge variant="neutral" icon={<Database size={10} />}>
-          Phase 1 Active
+          Phase 2 Active
         </Badge>
       </div>
     </header>

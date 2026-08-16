@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { TerminalRoute, CompanyEntitySummary, SystemStatus } from './types';
+import React, { useState, useEffect } from 'react';
+import { TerminalRoute, SystemStatus } from './types';
+import { ResearchProject } from './domain/models/ResearchProject';
+import { ProjectStorage } from './domain/storage/ProjectStorage';
 import { TopBar } from './components/layout/TopBar';
 import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { NewProjectModal } from './components/project/NewProjectModal';
 import { OverviewView, PhasePlaceholderView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
@@ -98,33 +101,45 @@ const ROUTE_DEFINITIONS: Record<
 
 export const App: React.FC = () => {
   const [activeRoute, setActiveRoute] = useState<TerminalRoute>('overview');
-  
-  // Standard initial company entity context (Tata Motors Limited for institutional equity context)
-  const [company] = useState<CompanyEntitySummary>({
-    name: 'Tata Motors Limited',
-    symbol: 'TATAMOTORS',
-    exchange: 'NSE',
-    sector: 'Automobile',
-    subsector: 'Passenger & Commercial Vehicles',
-    marketCapCategory: 'LARGE_CAP',
-    isLoaded: true,
-  });
+  const [activeProject, setActiveProject] = useState<ResearchProject>(() => ProjectStorage.getActiveProject());
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 1,
+    activePhase: 2,
     dataQualityStatus: 'PENDING',
-    memoryState: 'PHASE_1_SHELL_ACTIVE',
+    memoryState: 'PHASE_2_ONBOARDING_ACTIVE',
   });
+
+  // Re-sync active project if needed
+  useEffect(() => {
+    const current = ProjectStorage.getActiveProject();
+    if (current && current.id !== activeProject?.id) {
+      setActiveProject(current);
+    }
+  }, [activeProject?.id]);
 
   const handleRouteChange = (route: TerminalRoute) => {
     setActiveRoute(route);
   };
 
+  const handleProjectChange = (project: ResearchProject) => {
+    setActiveProject(project);
+  };
+
+  const handleProjectCreated = (newProject: ResearchProject) => {
+    setActiveProject(newProject);
+  };
+
   return (
     <div className="terminal-layout" id="terminal-app-root">
       {/* Top Header */}
-      <TopBar company={company} systemStatus={systemStatus} />
+      <TopBar
+        activeProject={activeProject}
+        systemStatus={systemStatus}
+        onProjectChange={handleProjectChange}
+        onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
+      />
 
       {/* Persistent 15-Module Side Navigation */}
       <SideNav activeRoute={activeRoute} onRouteChange={handleRouteChange} />
@@ -133,7 +148,12 @@ export const App: React.FC = () => {
       <main className="terminal-main" id="terminal-viewport">
         <ErrorBoundary key={activeRoute}>
           {activeRoute === 'overview' ? (
-            <OverviewView company={company} onNavigate={handleRouteChange} />
+            <OverviewView
+              activeProject={activeProject}
+              onNavigate={handleRouteChange}
+              onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
+              onProjectChange={handleProjectChange}
+            />
           ) : (
             <PhasePlaceholderView
               route={activeRoute}
@@ -149,6 +169,13 @@ export const App: React.FC = () => {
 
       {/* Bottom Status Bar */}
       <StatusBar systemStatus={systemStatus} />
+
+      {/* Phase 2 Company Onboarding Modal */}
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
+      />
     </div>
   );
 };

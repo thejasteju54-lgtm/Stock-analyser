@@ -17,35 +17,36 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 1 — Application Shell & Design System (Complete)
+Phase 2 — Research Project Creation & Company Onboarding (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite project initialized with high-density Bloomberg/TradingView-grade dark terminal aesthetic.
-- Full 15-module persistent navigation hierarchy, header with Indian enterprise context, telemetry status bar, error boundary, and responsive layouts implemented.
-- Typecheck: PASSED (0 errors).
-- Unit Tests: 4/4 PASSED (100%).
-- Build: PASSED (`npm.cmd run build` complete in 2.89s).
-- Browser Testing: Verified in browser with 0 console errors across all 15 navigation views.
+- React 19 + TypeScript + Vite terminal with Indian Company Identity validation, Sector Taxonomy registry (30+ sectors, subsectors, gated forensic & valuation models), and Project Lifecycle persistence.
+- Project creation modal (`NewProjectModal`), multi-project switcher (`ProjectSwitcher`), active profile cards, and storage engine (`ProjectStorage`) fully functional.
+- Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
+- Unit Tests: 21/21 PASSED across 5 test files (`taxonomy.test.ts`, `company.test.ts`, `projectStorage.test.ts`, `onboardingUI.test.tsx`, `shell.test.tsx`).
+- Build: PASSED (`npm.cmd run build` transformed 1821 modules into clean production bundle in 2.35s).
+- Browser Runtime: Terminal active and verified at `http://localhost:5173/`.
 
 ## Completed
 
 - Phase 0: Repository intelligence & architectural compliance review.
-- Phase 1: Application shell, high-density terminal tokens, persistent SideNav, TopBar, StatusBar, ErrorBoundary, route placeholders, UI primitives (`Badge`, `Card`, `Button`), Vitest test suite, and browser verification.
+- Phase 1: Application shell, high-density terminal tokens, persistent SideNav, TopBar, StatusBar, ErrorBoundary, route placeholders, UI primitives (`Badge`, `Card`, `Button`).
+- Phase 2: Company Identity validation (`Company.ts`), 30+ Sector Taxonomy definitions & gated model mappings (`SectorTaxonomyRegistry.ts`), Research Project state model (`ResearchProject.ts`), LocalStorage session persistence & duplicate protection (`ProjectStorage.ts`), Company Onboarding modal with dynamic model preview (`NewProjectModal.tsx`), multi-project switcher (`ProjectSwitcher.tsx`), and full unit test coverage.
 
 ## In Progress
 
-- Ready for Phase 2: Research Project Creation & Company Onboarding.
+- Ready for Phase 3: Document Ingestion Pipeline (PDF.js parsing, canvas OCR, classification, metadata extraction).
 
 ## Next Action
 
-- Execute Phase 2: Implement Indian company identification (NSE/BSE symbol input, company lookup, sector taxonomy selection) and research project state lifecycle store.
+- Execute Phase 3 according to `Phases.md` when requested.
 
 ## Architecture Decisions
 
-- **UI & Layout**: High-density 3-row, 2-column CSS Grid terminal layout with responsive collapse for mobile/tablet.
-- **Design Tokens**: Deep dark terminal surfaces (`#07090e`, `#0c1017`, `#121824`), tabular numerals for financial data (`JetBrains Mono`), and semantic color tokens (`--color-bullish`, `--color-bearish`, `--color-warning`, `--color-cyan`).
-- **Domain Decoupling**: View routes strictly demarcated by development phase with clear engine target declarations.
+- **Sector Taxonomy Registry**: Extensible lookup mapping 30+ Indian sectors to canonical business models (`BANKING`, `NBFC`, `INSURANCE`, `NON_FINANCIAL_OPERATING`, `REAL_ESTATE_TRUST`, `PROJECT_INFRA`, `UTILITY`), applicable metrics, gated forensic checks (e.g. `NPA_PCR_QUALITY` vs `BENEISH_M_SCORE`), and valuation frameworks (`PB_ABV` vs `DCF`/`EV_EBITDA`).
+- **Identity Disambiguation**: Company identity strictly requires Legal Name, Symbol (1-20 alphanumeric/&/-), Exchange (`NSE` | `BSE`), Sector, and Subsector before analysis can begin.
+- **Persistence & Duplicate Control**: `ProjectStorage` preserves project history in `localStorage` with seed fallback and guards against duplicate exchange+symbol collisions.
 
 ## Important Dependencies Added
 
@@ -73,15 +74,11 @@ Phase 1 — Application Shell & Design System (Complete)
 
 ## Tests
 
-Unit: 4 passed / 4 total (100%)
+Unit: 21 passed / 21 total (100%)
 Integration: Scoped to Phase 16
 E2E: Scoped to Phase 16
-Browser: Verified via Browser Subagent (14/14 routes + Overview validated)
-Build: Passed (dist assets generated)
-
-## Recent Git Commit
-
-- Pending Phase 1 commit.
+Typecheck: Passed (0 errors)
+Build: Passed (`dist/` generated)
 
 ## Important Constraints
 
