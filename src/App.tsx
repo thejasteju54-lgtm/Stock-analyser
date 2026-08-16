@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -26,10 +26,10 @@ const ROUTE_DEFINITIONS: Record<
     requiredEngine: 'EvidenceExtractionEngine (2-Year Model Normalizer)',
   },
   fundamentals: {
-    title: 'Deterministic Financial Calculation Engine',
-    phaseNumber: 'PHASE 5',
-    description: 'Reproducible financial ratio calculation with zero-denominator safety, business model gating, and multi-hop provenance tracing.',
-    requiredEngine: 'FinancialCalculationEngine (Deterministic TypeScript Arithmetic)',
+    title: 'Fundamental Health & Financial Engine',
+    phaseNumber: 'PHASE 6',
+    description: 'Evidence-driven, sector-aware fundamental health assessment, multi-category scoring, and deterministic financial calculations.',
+    requiredEngine: 'FundamentalHealthEngine (Multi-Category Health Sentinel)',
   },
   forensic: {
     title: 'Forensic Accounting & Red-Flag Matrix',
@@ -103,12 +103,13 @@ export const App: React.FC = () => {
   const [activeRoute, setActiveRoute] = useState<TerminalRoute>('overview');
   const [activeProject, setActiveProject] = useState<ResearchProject>(() => ProjectStorage.getActiveProject());
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
+  const [fundamentalsViewMode, setFundamentalsViewMode] = useState<'HEALTH' | 'CALCULATIONS'>('HEALTH');
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 5,
+    activePhase: 6,
     dataQualityStatus: 'PENDING',
-    memoryState: 'Phase 5: Financial Calculation Engine Active (Zero-Denominator Safe, Gated, Versioned)',
+    memoryState: 'Phase 6: Fundamental Health Analysis Active (Evidence-Driven, Sector-Gated, Weight-Renormalized)',
   });
 
   // Re-sync active project if needed
@@ -163,7 +164,26 @@ export const App: React.FC = () => {
           ) : activeRoute === 'extraction' ? (
             <EvidenceExtractionView />
           ) : activeRoute === 'fundamentals' ? (
-            <FinancialCalculationsView />
+            fundamentalsViewMode === 'HEALTH' ? (
+              <FundamentalHealthView
+                currentProject={activeProject}
+                onNavigateToCalculations={() => setFundamentalsViewMode('CALCULATIONS')}
+                onNavigateToIngestion={() => handleRouteChange('ingestion')}
+              />
+            ) : (
+              <div>
+                <div style={{ padding: '16px 24px 0 24px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setFundamentalsViewMode('HEALTH')}
+                    className="terminal-btn terminal-btn-sm"
+                    style={{ background: '#0284c7', color: '#fff' }}
+                  >
+                    ← Return to Fundamental Health Analysis
+                  </button>
+                </div>
+                <FinancialCalculationsView />
+              </div>
+            )
           ) : (
             <PhasePlaceholderView
               route={activeRoute}

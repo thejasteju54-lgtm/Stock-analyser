@@ -6,6 +6,7 @@ import {
   ContradictionRecord,
 } from '../extraction/FinancialFactTypes';
 import { CalculatedMetric } from '../calculations/CalculationTypes';
+import { FundamentalHealthAnalysis } from '../analysis/FundamentalHealthTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -32,6 +33,7 @@ export interface ResearchProject {
   managementClaims?: ManagementClaim[];
   contradictions?: ContradictionRecord[];
   calculatedMetrics?: CalculatedMetric[];
+  fundamentalAnalysis?: FundamentalHealthAnalysis;
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;

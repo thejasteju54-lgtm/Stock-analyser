@@ -17,17 +17,21 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 5 — Deterministic Financial Calculation Engine (Complete)
+Phase 6 — Fundamental Health Analysis (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with pure deterministic Financial Calculation Engine across 6 core categories (YoY Growth with explicit negative/zero base status mapping, Margins with zero/negative denominator safety, Cash Flow Quality with CFO/PAT diagnostic status and FCF Capex formula, Return Metrics with Average Equity ROE default & Closing Equity fallback and Average CE ROCE, Leverage & Solvency with D/E, Net Debt/EBITDA, Interest Coverage, and Working Capital with average-balance operating WC days and strict COGS denominator policy).
-- Full multi-hop fact provenance linking (`inputFactIds`, document names, page numbers, extracted values, normalized units), business model and economic archetype gating (`LENDING_FINANCIAL` vs `OPERATING_INDUSTRIAL`), dual versioning (`financial-metrics-v1`, `india-equity-methodology-v1`), and interactive audit modal.
-- Phase 5 route `/fundamentals` fully functional with `FinancialCalculationsView`, `CalculatedMetricCard`, `MetricProvenanceModal`, and `BusinessModelGatingBanner`.
+- React 19 + TypeScript + Vite terminal with pure deterministic Fundamental Health Analysis Engine across 6 core categories (Growth Quality, Profitability & Margins, Cash Flow Quality, Balance Sheet & Solvency, Capital Efficiency, Working Capital Efficiency) and 12 distinct business model scoring policies.
+- Objective Signal vs Red-Flag Severity framework: numerical triggers (`HealthSignal`) are contextually classified into `Severity` (`LOW` | `MEDIUM` | `HIGH` | `CRITICAL`) and `Status` (`OBSERVED` | `REQUIRES_INVESTIGATION` | `MATERIAL_CONCERN`) with explicit `requiresForensicReview` flags as handoffs for Phase 7 Forensic Accounting.
+- Dynamic Applicable-Weight Renormalization: excluded/not-applicable categories for non-industrial sectors (e.g. Banking, NBFC, REIT) dynamically remove their weight and renormalize remaining applicable weights to 100%.
+- Multi-dimensional Quality & Confidence: assesses `DataCompleteness` (0-100%), `EvidenceQuality` (0-100%), and `AnalysisConfidence` (`HIGH` | `MEDIUM` | `LOW` | `NOT_ASSESSABLE`), gated by a minimum completeness threshold (40%).
+- Evidence-Driven Return Driver Decomposition: decomposes ROE and ROCE based strictly on extracted accounting facts (`SUPPORTED_DRIVER` vs `DRIVER_NOT_DETERMINABLE`) without AI assumptions.
+- Decoupled from Investment Recommendations: fundamental health scores (0-10) are strictly diagnostic and never generate BUY/HOLD/AVOID verdicts or target prices.
+- Phase 6 UI components & route `/fundamentals` fully integrated: `FundamentalHealthView`, `FundamentalHealthCard`, `RedFlagMatrixCard`, `StrengthsAndWatchItemsCard`, `DriverDecompositionModal`, and `BusinessModelGatingBanner`.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
 - Lint: PASSED (0 errors via `npm.cmd run lint`).
-- Unit Tests: 144/144 PASSED across 30 test files (`growthCalculations.test.ts`, `marginCalculations.test.ts`, `cashFlowCalculations.test.ts`, `returnCalculations.test.ts`, `leverageCalculations.test.ts`, `workingCapitalCalculations.test.ts`, `businessModelGating.test.ts`, `calculationProvenance.test.ts`, `calculationUI.test.tsx`, + all previous 21 test suites).
-- Build: PASSED (`npm.cmd run build` transformed 1848 modules into clean production bundle in 3.36s).
+- Unit Tests: 165/165 PASSED across 37 test files (7 dedicated Phase 6 suites + 30 previous suites).
+- Build: PASSED (`npm.cmd run build` transformed 1855 modules into clean production bundle in 3.94s).
 - Browser Runtime: Terminal active at `http://localhost:5173/`.
 
 ## Completed
@@ -38,14 +42,15 @@ Phase 5 — Deterministic Financial Calculation Engine (Complete)
 - Phase 3: Document Ingestion Pipeline (`DocumentIngestionEngine.ts`), Document Classifier (`DocumentClassifier.ts`), SHA-256 Hasher & Duplicate Detector (`DocumentHasher.ts`), Reporting Period & Company Consistency Detector (`PeriodDetector.ts`), OCR Status & Confidence Processor with optional confidence (`OcrProcessor.ts`), Two-Year Annual Report Intake Audit (`TwoYearReportAudit.ts`), and Terminal Ingestion View (`IngestionView.tsx`).
 - Phase 4: Financial Fact & Management Claim domain models (`FinancialFactTypes.ts`), Unit & Currency Normalizer (`UnitNormalizer.ts`), Deterministic Financial Fact Extractor (`FinancialFactExtractor.ts`), Contextual Discrepancy & Contradiction Sentinel (`ContradictionDetector.ts`), Two-Year Side-by-Side Model Alignment (`TwoYearReconciliation.ts`), Evidence Extraction Route (`EvidenceExtractionView.tsx`), Two-Year Reconciled Fact Table (`TwoYearFactTable.tsx`), Management Claims Ledger (`ManagementClaimsLedger.tsx`), Contradiction Alert Banner (`ContradictionAlertBanner.tsx`), and Provenance Audit Modal (`FactProvenanceDrawer.tsx`).
 - Phase 5: Deterministic Financial Calculation Engine (`FinancialCalculationEngine.ts`), centralized Formula Registry with versioning (`FormulaRegistry.ts`), calculation domain types (`CalculationTypes.ts`), business model gating (`BusinessModelGatingBanner.tsx`), calculated metric card (`CalculatedMetricCard.tsx`), multi-hop fact-to-metric provenance modal (`MetricProvenanceModal.tsx`), calculation workspace route (`FinancialCalculationsView.tsx`), average-balance working capital days, CFO/PAT negative loss diagnostic statuses (`CASH_GENERATION_DURING_ACCOUNTING_LOSS`, `CASH_BURN_DURING_ACCOUNTING_LOSS`), and 9 dedicated unit test suites.
+- Phase 6: Fundamental Health Analysis Engine (`FundamentalHealthEngine.ts`), 12 Business Model Scoring Policies (`HealthScoringPolicyRegistry.ts`), domain schemas (`FundamentalHealthTypes.ts`), category score cards (`FundamentalHealthCard.tsx`), red flag risk matrix (`RedFlagMatrixCard.tsx`), strengths and watch items (`StrengthsAndWatchItemsCard.tsx`), driver decomposition modal (`DriverDecompositionModal.tsx`), workspace dashboard (`FundamentalHealthView.tsx`), and 7 dedicated unit test suites (`fundamentalHealthScoring.test.ts`, `businessModelScoringPolicies.test.ts`, `signalSeverityContext.test.ts`, `driverDecomposition.test.ts`, `evidenceQualityAndConfidence.test.ts`, `verdictDecoupling.test.ts`, `fundamentalHealthUI.test.tsx`).
 
 ## In Progress
 
-- Ready for Phase 6: Fundamental Health & DuPont Analysis (5-Stage DuPont decomposition, tax burden, interest burden, EBIT margin, asset turnover, financial leverage, earnings quality grading).
+- Ready for Phase 7: Forensic Accounting & Red Flag Engine (beneish m-score style ratios, auditor analysis, related-party transactions, revenue recognition quality, contingent liabilities).
 
 ## Next Action
 
-- Execute Phase 6 according to `Phases.md` when requested.
+- Await user approval and prompt for Phase 7 execution. DO NOT start Phase 7 automatically.
 
 ## Architecture Decisions
 

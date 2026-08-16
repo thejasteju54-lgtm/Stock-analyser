@@ -102,11 +102,11 @@ export class ProjectStorage {
       (p) =>
         p.id !== project.id &&
         p.company.symbol.toUpperCase() === project.company.symbol.toUpperCase() &&
-        p.company.exchange.toUpperCase() === project.company.exchange.toUpperCase()
+        (p.company.exchange || 'NSE').toUpperCase() === (project.company.exchange || 'NSE').toUpperCase()
     );
     if (duplicate) {
       throw new Error(
-        `A research project for ${project.company.exchange}:${project.company.symbol} already exists (${duplicate.name}).`
+        `A research project for ${project.company.exchange || 'NSE'}:${project.company.symbol} already exists (${duplicate.name}).`
       );
     }
 
@@ -307,6 +307,29 @@ export class ProjectStorage {
     const updatedProject: ResearchProject = {
       ...project,
       calculatedMetrics,
+      status: 'ANALYZED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getFundamentalAnalysisForProject(projectId: string): any | undefined {
+    const project = this.getProject(projectId);
+    return project?.fundamentalAnalysis;
+  }
+
+  public static saveFundamentalAnalysisForProject(
+    projectId: string,
+    fundamentalAnalysis: any
+  ): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      fundamentalAnalysis,
       status: 'ANALYZED',
       updatedAt: new Date().toISOString(),
     };
