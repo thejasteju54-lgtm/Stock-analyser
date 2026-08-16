@@ -1,5 +1,10 @@
 import { CompanyIdentity } from './Company';
 import { IngestedDocument } from '../ingestion/DocumentTypes';
+import {
+  FinancialFact,
+  ManagementClaim,
+  ContradictionRecord,
+} from '../extraction/FinancialFactTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -22,6 +27,9 @@ export interface ResearchProject {
   company: CompanyIdentity;
   status: ProjectLifecycleStatus;
   documents: IngestedDocument[];
+  facts?: FinancialFact[];
+  managementClaims?: ManagementClaim[];
+  contradictions?: ContradictionRecord[];
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;

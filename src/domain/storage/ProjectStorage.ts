@@ -1,6 +1,11 @@
 import { ResearchProject, createResearchProject } from '../models/ResearchProject';
 import { CompanyIdentity, createCompanyEntity } from '../models/Company';
 import { IngestedDocument } from '../ingestion/DocumentTypes';
+import {
+  FinancialFact,
+  ManagementClaim,
+  ContradictionRecord,
+} from '../extraction/FinancialFactTypes';
 
 const STORAGE_KEY_PROJECTS = 'eq_terminal_research_projects_v1';
 const STORAGE_KEY_ACTIVE_PROJECT_ID = 'eq_terminal_active_project_id_v1';
@@ -189,6 +194,97 @@ export class ProjectStorage {
     const updatedProject: ResearchProject = {
       ...project,
       documents: updatedDocs,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getFactsForProject(projectId: string): FinancialFact[] {
+    const project = this.getProject(projectId);
+    return project?.facts || [];
+  }
+
+  public static saveFactsForProject(projectId: string, facts: FinancialFact[]): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) throw new Error(`Project not found: ${projectId}`);
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      facts,
+      status: facts.length > 0 ? 'EXTRACTED' : project.status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getClaimsForProject(projectId: string): ManagementClaim[] {
+    const project = this.getProject(projectId);
+    return project?.managementClaims || [];
+  }
+
+  public static saveClaimsForProject(projectId: string, claims: ManagementClaim[]): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) throw new Error(`Project not found: ${projectId}`);
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      managementClaims: claims,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getContradictionsForProject(projectId: string): ContradictionRecord[] {
+    const project = this.getProject(projectId);
+    return project?.contradictions || [];
+  }
+
+  public static saveContradictionsForProject(
+    projectId: string,
+    contradictions: ContradictionRecord[]
+  ): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) throw new Error(`Project not found: ${projectId}`);
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      contradictions,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static resolveContradiction(
+    projectId: string,
+    contradictionId: string,
+    resolution: ContradictionRecord['resolutionStatus'],
+    notes?: string
+  ): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) throw new Error(`Project not found: ${projectId}`);
+
+    const contradictions = (project.contradictions || []).map((c) =>
+      c.id === contradictionId
+        ? {
+            ...c,
+            resolutionStatus: resolution,
+            resolvedAt: new Date().toISOString(),
+            resolutionNotes: notes,
+          }
+        : c
+    );
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      contradictions,
       updatedAt: new Date().toISOString(),
     };
 

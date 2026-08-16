@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -106,9 +106,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 3,
+    activePhase: 4,
     dataQualityStatus: 'PENDING',
-    memoryState: 'PHASE_3_INGESTION_ACTIVE',
+    memoryState: 'PHASE_4_EXTRACTION_ACTIVE',
   });
 
   // Re-sync active project if needed
@@ -160,6 +160,8 @@ export const App: React.FC = () => {
               onNavigate={handleRouteChange}
               onProjectChange={handleProjectChange}
             />
+          ) : activeRoute === 'extraction' ? (
+            <EvidenceExtractionView />
           ) : (
             <PhasePlaceholderView
               route={activeRoute}

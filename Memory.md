@@ -17,16 +17,17 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 3 — Document Ingestion & Evidence Intake (Complete)
+Phase 4 — Evidence Extraction & Financial Fact Reconstruction (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with multi-format Document Ingestion pipeline, Deterministic Document Classifier, SHA-256 Duplicate Detection, Page-Preserving Extraction, OCR Confidence Gating (>90 High, 80-90 Medium, <80 Low -> REQUIRES_REVIEW), Screenshot Handling (`SCREENSHOT_DERIVED`), and Two-Year Annual Report Intake Audit.
-- Phase 3 route `/ingestion` fully functional with terminal dropzone (`DocumentDropzone`), Two-Year Audit Card (`TwoYearAuditCard`), Ingested Evidence Queue Table (`DocumentQueueTable`), Page Inspector Modal (`DocumentPageInspectorModal`), and 2-Year Sample Research Kit loader.
+- React 19 + TypeScript + Vite terminal with structured Financial Fact extraction across 5 statement categories (Income Statement, Balance Sheet, Cash Flow, Ownership, Segment Data), Management Claims ledger, Unit & Currency Normalizer (Lakh/Crore/Million/Foreign), Contextual Discrepancy & Contradiction Sentinel (`MATCH`, `ROUNDING_VARIANCE`, `UNIT_VARIANCE`, `PERIOD_VARIANCE`, `ACCOUNTING_BASIS_VARIANCE`, `RESTATEMENT`, `SOURCE_DEFINITION_VARIANCE`, `MATERIAL_CONFLICT`), 2-Year Reconciled Statements table, and Fact Provenance Audit drawer.
+- Phase 4 route `/extraction` fully functional with `EvidenceExtractionView`, `TwoYearFactTable`, `ManagementClaimsLedger`, `ContradictionAlertBanner`, and `FactProvenanceDrawer`.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
-- Unit Tests: 66/66 PASSED across 13 test files (`ocrConfidence.test.ts`, `documentClassification.test.ts`, `documentProcessing.test.ts`, `duplicateDetection.test.ts`, `periodDetection.test.ts`, `twoYearAudit.test.ts`, `ingestionUI.test.tsx`, `businessModel.test.ts`, `taxonomy.test.ts`, `company.test.ts`, `projectStorage.test.ts`, `onboardingUI.test.tsx`, `shell.test.tsx`).
-- Build: PASSED (`npm.cmd run build` transformed 1833 modules into clean production bundle in 2.88s).
-- Browser Runtime: Terminal active and verified at `http://localhost:5173/` (sample kit loaded, two-year baseline ready, page inspector verified).
+- Lint: PASSED (0 errors via `npm.cmd run lint`).
+- Unit Tests: 103/103 PASSED across 21 test files (`unitNormalizer.test.ts`, `financialExtraction.test.ts`, `contradictionDetector.test.ts`, `twoYearReconciliation.test.ts`, `managementClaims.test.ts`, `antiHallucinationGate.test.ts`, `extractionUI.test.tsx`, `realFileVerification.test.ts`, `ocrConfidence.test.ts`, `documentClassification.test.ts`, `documentProcessing.test.ts`, `duplicateDetection.test.ts`, `periodDetection.test.ts`, `twoYearAudit.test.ts`, `ingestionUI.test.tsx`, `businessModel.test.ts`, `taxonomy.test.ts`, `company.test.ts`, `projectStorage.test.ts`, `onboardingUI.test.tsx`, `shell.test.tsx`).
+- Build: PASSED (`npm.cmd run build` transformed 1842 modules into clean production bundle in 3.11s).
+- Browser Runtime: Terminal active at `http://localhost:5173/`.
 
 ## Completed
 
@@ -34,23 +35,23 @@ Phase 3 — Document Ingestion & Evidence Intake (Complete)
 - Phase 1: Application shell, high-density terminal tokens, persistent SideNav, TopBar, StatusBar, ErrorBoundary, route placeholders, UI primitives (`Badge`, `Card`, `Button`).
 - Phase 2: Company Identity validation (`Company.ts`), 30+ Sector Taxonomy definitions & subsector mappings (`SectorTaxonomyRegistry.ts`), extensible Business Model Taxonomy & Gated Model Registry (`BusinessModelRegistry.ts`), Research Project state model (`ResearchProject.ts`), LocalStorage session persistence & duplicate protection (`ProjectStorage.ts`), Company Onboarding modal with dynamic model preview (`NewProjectModal.tsx`), multi-project switcher (`ProjectSwitcher.tsx`), and full unit test coverage.
 - Phase 3: Document Ingestion Pipeline (`DocumentIngestionEngine.ts`), Document Classifier (`DocumentClassifier.ts`), SHA-256 Hasher & Duplicate Detector (`DocumentHasher.ts`), Reporting Period & Company Consistency Detector (`PeriodDetector.ts`), OCR Status & Confidence Processor with optional confidence (`OcrProcessor.ts`), Two-Year Annual Report Intake Audit (`TwoYearReportAudit.ts`), and Terminal Ingestion View (`IngestionView.tsx`).
+- Phase 4: Financial Fact & Management Claim domain models (`FinancialFactTypes.ts`), Unit & Currency Normalizer (`UnitNormalizer.ts`), Deterministic Financial Fact Extractor (`FinancialFactExtractor.ts`), Contextual Discrepancy & Contradiction Sentinel (`ContradictionDetector.ts`), Two-Year Side-by-Side Model Alignment (`TwoYearReconciliation.ts`), Evidence Extraction Route (`EvidenceExtractionView.tsx`), Two-Year Reconciled Fact Table (`TwoYearFactTable.tsx`), Management Claims Ledger (`ManagementClaimsLedger.tsx`), Contradiction Alert Banner (`ContradictionAlertBanner.tsx`), and Provenance Audit Modal (`FactProvenanceDrawer.tsx`).
 
 ## In Progress
 
-- Ready for Phase 4: Structured Evidence Extraction Review (2-Year Model Normalizer, financial statement table extraction, provenance tagging, contradiction detection).
+- Ready for Phase 5: Financial Calculation Engine (Deterministic revenue growth, EBITDA/EBIT/PAT margins, CFO/PAT, FCF, ROE, ROCE, debt ratios, interest coverage, working-capital cycles).
 
 ## Next Action
 
-- Execute Phase 4 according to `Phases.md` when requested.
+- Execute Phase 5 according to `Phases.md` when requested.
 
 ## Architecture Decisions
 
-- **Document Identity & Provenance**: Every document receives a deterministic ID (`doc_<symbol>_<timestamp>_<hash>`), SHA-256 content hash, explicit provenance source (`PRIMARY_SOURCE_DERIVED` vs `SCREENSHOT_DERIVED`), reporting period, and company verification status.
-- **Page Boundary Preservation**: Ingestion pipeline never flattens multi-page PDFs into untraceable strings; each page is stored with page numbers, text layers, OCR flags, and confidence scores.
-- **OCR Status & Confidence Architecture**: `ocrConfidence?: number` is undefined for machine-readable pages (never represented as 0%), and maps into `NOT_REQUIRED`, `COMPLETE`, `REQUIRES_REVIEW` (<80%), or `FAILED`.
-- **Two-Year Annual Report Intake Gate**: Audits project documents for FY-1 (Base) and FY-0 (Current) annual reports, warning on duplicate years or missing periods before downstream extraction is unlocked.
-- **Business Model Taxonomy Registry**: Decoupled from Sector taxonomy to represent *how* a company economically operates (19+ extensible archetypes).
-- **Persistence & Duplicate Control**: `ProjectStorage` preserves project documents and prevents duplicate upload collisions.
+- **Optional Financial Values & Explicit Availability**: `value?: number` and `originalValue?: number` are strictly optional with explicit `availabilityStatus` (`AVAILABLE`, `NOT_DISCLOSED`, `NOT_FOUND`, `UNREADABLE`, `REQUIRES_REVIEW`). Missing numbers are never represented as zero.
+- **Foreign Currency Protection**: `UnitNormalizer` preserves original foreign currencies (`USD`, `EUR`, `GBP`) without silent conversion unless explicit rate, date, and source metadata are supplied.
+- **Contextual Discrepancy Classification**: Contradictions are categorized into 8 distinct contextual tiers (`MATCH`, `ROUNDING_VARIANCE`, `UNIT_VARIANCE`, `PERIOD_VARIANCE`, `ACCOUNTING_BASIS_VARIANCE`, `RESTATEMENT`, `SOURCE_DEFINITION_VARIANCE`, `MATERIAL_CONFLICT`) and both conflicting facts are preserved for auditability.
+- **Stable Evidence Identity**: Every fact and claim retains stable `documentId`, `pageId`, `pageNumber`, `tableHeader`, and `rawSnippet` citations.
+- **Strict Separation of Extraction vs Calculation**: Phase 4 extracts inputs; derived financial ratios (growth, margins, DuPont, ROCE) are strictly deferred to Phase 5.
 
 ## Important Dependencies Added
 
@@ -78,7 +79,7 @@ Phase 3 — Document Ingestion & Evidence Intake (Complete)
 
 ## Tests
 
-Unit: 66 passed / 66 total (100%)
+Unit: 103 passed / 103 total (100%)
 Integration: Scoped to Phase 16
 E2E: Scoped to Phase 16
 Typecheck: Passed (0 errors)
