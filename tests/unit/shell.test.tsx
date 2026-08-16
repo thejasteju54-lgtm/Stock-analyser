@@ -1,0 +1,88 @@
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { App } from '../../src/App';
+import { ErrorBoundary } from '../../src/components/common/ErrorBoundary';
+import { Badge } from '../../src/components/common/Badge';
+import { Card } from '../../src/components/common/Card';
+import { Button } from '../../src/components/common/Button';
+
+describe('Phase 1 — Application Shell & Terminal Layout', () => {
+  it('renders the terminal layout with TopBar, SideNav, StatusBar and Overview viewport', () => {
+    render(<App />);
+
+    // Verify Brand / TopBar
+    expect(screen.getByText(/Equity Intelligence Terminal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Institutional Grade/i)).toBeInTheDocument();
+
+    // Verify Active Company Context in TopBar and Overview
+    const companyMatches = screen.getAllByText(/Tata Motors Limited/i);
+    expect(companyMatches.length).toBeGreaterThanOrEqual(1);
+    const tickerMatches = screen.getAllByText(/NSE:TATAMOTORS/i);
+    expect(tickerMatches.length).toBeGreaterThanOrEqual(1);
+
+    // Verify Overview View Title
+    expect(screen.getByText(/Indian Equity Research Intelligence Terminal/i)).toBeInTheDocument();
+
+    // Verify SideNav navigation items exist
+    expect(screen.getByRole('button', { name: /Terminal Overview/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Document Ingestion/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Forensic Accounting/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sector Valuation/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Data Quality Gate/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Investment Verdict/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Evidence Explorer/i })).toBeInTheDocument();
+
+    // Verify Bottom StatusBar
+    expect(screen.getByText(/ZERO_FABRICATION_POLICY_ACTIVE/i)).toBeInTheDocument();
+    expect(screen.getByText(/MODULAR_MONOLITH_ACTIVE/i)).toBeInTheDocument();
+  });
+
+  it('switches views when clicking a navigation item in SideNav', () => {
+    render(<App />);
+
+    const forensicNavButton = screen.getByRole('button', { name: /Forensic Accounting/i });
+    fireEvent.click(forensicNavButton);
+
+    // Verify view changed to Forensic placeholder
+    expect(screen.getByText(/Forensic Accounting & Red-Flag Matrix/i)).toBeInTheDocument();
+    expect(screen.getByText(/SCOPED TO PHASE 7/i)).toBeInTheDocument();
+
+    // Click Return to Overview
+    const backBtn = screen.getByRole('button', { name: /Return to Overview/i });
+    fireEvent.click(backBtn);
+
+    expect(screen.getByText(/Indian Equity Research Intelligence Terminal/i)).toBeInTheDocument();
+  });
+
+  it('renders reusable UI primitives (Badge, Card, Button) correctly', () => {
+    render(
+      <Card title="Test Card" action={<Badge variant="bullish">BUY</Badge>}>
+        <Button variant="primary">Submit Research</Button>
+      </Card>
+    );
+
+    expect(screen.getByText('Test Card')).toBeInTheDocument();
+    expect(screen.getByText('BUY')).toHaveClass('badge-bullish');
+    expect(screen.getByRole('button', { name: 'Submit Research' })).toHaveClass('terminal-btn-primary');
+  });
+
+  it('catches runtime errors in ErrorBoundary without crashing the application', () => {
+    const ProblematicComponent = () => {
+      throw new Error('Test Engine Failure');
+    };
+
+    // Spy on console.error to keep test output clean
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(
+      <ErrorBoundary>
+        <ProblematicComponent />
+      </ErrorBoundary>
+    );
+
+    expect(screen.getByText(/Terminal Runtime Error/i)).toBeInTheDocument();
+    expect(screen.getByText(/Test Engine Failure/i)).toBeInTheDocument();
+
+    consoleSpy.mockRestore();
+  });
+});
