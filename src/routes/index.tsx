@@ -397,4 +397,4 @@ export const PhasePlaceholderView: React.FC<PhasePlaceholderViewProps> = ({
 
 export { IngestionView } from './IngestionView';
 export { EvidenceExtractionView } from './EvidenceExtractionView';
-
+export { FinancialCalculationsView } from './FinancialCalculationsView';

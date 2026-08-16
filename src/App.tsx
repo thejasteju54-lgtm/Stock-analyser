@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -26,10 +26,10 @@ const ROUTE_DEFINITIONS: Record<
     requiredEngine: 'EvidenceExtractionEngine (2-Year Model Normalizer)',
   },
   fundamentals: {
-    title: 'Fundamental Health & DuPont Analysis',
-    phaseNumber: 'PHASE 6',
-    description: 'Revenue quality, margin trajectory, cash conversion, and 5-stage DuPont decomposition.',
-    requiredEngine: 'FundamentalHealthEngine (Deterministic Arithmetic)',
+    title: 'Deterministic Financial Calculation Engine',
+    phaseNumber: 'PHASE 5',
+    description: 'Reproducible financial ratio calculation with zero-denominator safety, business model gating, and multi-hop provenance tracing.',
+    requiredEngine: 'FinancialCalculationEngine (Deterministic TypeScript Arithmetic)',
   },
   forensic: {
     title: 'Forensic Accounting & Red-Flag Matrix',
@@ -106,9 +106,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 4,
+    activePhase: 5,
     dataQualityStatus: 'PENDING',
-    memoryState: 'PHASE_4_EXTRACTION_ACTIVE',
+    memoryState: 'Phase 5: Financial Calculation Engine Active (Zero-Denominator Safe, Gated, Versioned)',
   });
 
   // Re-sync active project if needed
@@ -162,6 +162,8 @@ export const App: React.FC = () => {
             />
           ) : activeRoute === 'extraction' ? (
             <EvidenceExtractionView />
+          ) : activeRoute === 'fundamentals' ? (
+            <FinancialCalculationsView />
           ) : (
             <PhasePlaceholderView
               route={activeRoute}

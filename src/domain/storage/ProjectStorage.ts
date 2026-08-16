@@ -292,6 +292,29 @@ export class ProjectStorage {
     return updatedProject;
   }
 
+  public static getCalculatedMetricsForProject(projectId: string): any[] {
+    const project = this.getProject(projectId);
+    return project?.calculatedMetrics || [];
+  }
+
+  public static saveCalculatedMetricsForProject(
+    projectId: string,
+    calculatedMetrics: any[]
+  ): ResearchProject {
+    const project = this.getProject(projectId);
+    if (!project) throw new Error(`Project not found: ${projectId}`);
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      calculatedMetrics,
+      status: 'ANALYZED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
   private static saveAllProjects(projects: ResearchProject[]): void {
     if (!this.isBrowserEnvironment()) return;
     window.localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projects));

@@ -5,6 +5,7 @@ import {
   ManagementClaim,
   ContradictionRecord,
 } from '../extraction/FinancialFactTypes';
+import { CalculatedMetric } from '../calculations/CalculationTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -30,6 +31,7 @@ export interface ResearchProject {
   facts?: FinancialFact[];
   managementClaims?: ManagementClaim[];
   contradictions?: ContradictionRecord[];
+  calculatedMetrics?: CalculatedMetric[];
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;

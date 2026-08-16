@@ -292,6 +292,10 @@ class BusinessModelRegistryStore {
     return this.registry.get(code.trim().toUpperCase());
   }
 
+  public getModel(code: string): BusinessModelDefinition | undefined {
+    return this.get(code);
+  }
+
   public getAll(): BusinessModelDefinition[] {
     return Array.from(this.registry.values());
   }
