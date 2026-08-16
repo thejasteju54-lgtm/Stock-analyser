@@ -63,7 +63,8 @@ export class ContradictionDetector {
   }
 
   /**
-   * Evaluates contextual discrepancy between two financial facts for the same metric & period.
+   * Evaluates contextual discrepancy between two financial facts using Contextual Priority Architecture.
+   * Contextual compatibility is evaluated BEFORE applying numerical divergence heuristics.
    */
   public static analyzePair(
     factA: FinancialFact,
@@ -80,101 +81,190 @@ export class ContradictionDetector {
     const diff = Math.abs(valA - valB);
     const avg = (Math.abs(valA) + Math.abs(valB)) / 2;
     const pctDiff = avg > 0 ? (diff / avg) * 100 : 0;
+    const roundedDiff = Math.round(diff * 100) / 100;
+    const roundedPctDiff = Math.round(pctDiff * 100) / 100;
 
-    // 1. Check Accounting Basis Variance (Consolidated vs Standalone)
+    // =========================================================================
+    // LAYER 1: CONTEXTUAL COMPATIBILITY CHECKS (Priority over numerical diff)
+    // =========================================================================
+
+    // 1. Company Identity Mismatch
+    if (factA.companySymbol && factB.companySymbol && factA.companySymbol !== factB.companySymbol) {
+      return {
+        discrepancyType: 'UNRESOLVED',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Company entity mismatch: Comparing ${factA.companySymbol} (${factA.documentName}) with ${factB.companySymbol} (${factB.documentName}).`,
+        defaultResolutionStatus: 'REQUIRES_ANALYST_CHOICE',
+      };
+    }
+
+    // 2. Metric Identity Mismatch
+    if (factA.metric !== factB.metric) {
+      return {
+        discrepancyType: 'SOURCE_DEFINITION_VARIANCE',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Metric identity mismatch: Comparing ${factA.metricLabel} against ${factB.metricLabel}.`,
+        defaultResolutionStatus: 'REQUIRES_ANALYST_CHOICE',
+      };
+    }
+
+    // 3. Reporting Period & Fiscal Year Mismatch (Annual vs Quarterly / Period Year)
+    const periodA = factA.reportingPeriod;
+    const periodB = factB.reportingPeriod;
+    const isDifferentPeriodType = periodA.periodType !== periodB.periodType;
+    const isDifferentFY = periodA.fiscalYear && periodB.fiscalYear && periodA.fiscalYear !== periodB.fiscalYear;
+    const isDifferentQuarter = periodA.quarter && periodB.quarter && periodA.quarter !== periodB.quarter;
+
+    if (isDifferentPeriodType || isDifferentFY || isDifferentQuarter) {
+      return {
+        discrepancyType: 'PERIOD_VARIANCE',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Period mismatch: ${periodA.rawPeriodString || periodA.fiscalYear || periodA.periodType} vs ${periodB.rawPeriodString || periodB.fiscalYear || periodB.periodType}.`,
+        defaultResolutionStatus: 'OPEN',
+      };
+    }
+
+    // 4. Accounting Basis Variance (Consolidated vs Standalone)
+    // Even if numerical divergence is massive (e.g. 50,000 Cr), this is an accounting basis variance.
     if (factA.accountingBasis !== factB.accountingBasis) {
       return {
         discrepancyType: 'ACCOUNTING_BASIS_VARIANCE',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
         explanation: `Accounting basis variance: ${factA.documentName} is ${factA.accountingBasis} (₹${valA} Cr) while ${factB.documentName} is ${factB.accountingBasis} (₹${valB} Cr).`,
         defaultResolutionStatus: 'RESOLVED_CONSOLIDATED',
       };
     }
 
-    // 2. Check Period Variance
-    if (factA.reportingPeriod.periodType !== factB.reportingPeriod.periodType) {
-      return {
-        discrepancyType: 'PERIOD_VARIANCE',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
-        explanation: `Period type mismatch: ${factA.reportingPeriod.rawPeriodString || factA.reportingPeriod.periodType} vs ${factB.reportingPeriod.rawPeriodString || factB.reportingPeriod.periodType}.`,
-        defaultResolutionStatus: 'OPEN',
-      };
-    }
+    // 5. Restatement in Subsequent Audited Reports
+    // When both are primary filings for the same reporting period, but one comes from a subsequent fiscal year's filing or contains restatement keywords
+    const extractDocYear = (docName: string): number | null => {
+      const match = docName.match(/FY(\d{2,4})/i) || docName.match(/20(\d{2})/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        return num < 100 ? 2000 + num : num;
+      }
+      return null;
+    };
 
-    // 3. Exact or Negligible Match (<0.05%)
-    if (pctDiff < 0.05) {
-      return {
-        discrepancyType: 'MATCH',
-        difference: diff,
-        percentageDiff: pctDiff,
-        explanation: 'Values match across documents within 0.05% tolerance.',
-        defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
-      };
-    }
+    const docYearA = extractDocYear(factA.documentName);
+    const docYearB = extractDocYear(factB.documentName);
+    const isSubsequentDocYear = docYearA !== null && docYearB !== null && docYearA !== docYearB;
+    const hasRestatementKeyword =
+      factA.documentName.toLowerCase().includes('restate') ||
+      factB.documentName.toLowerCase().includes('restate') ||
+      (factA.sourceReference.tableHeader && factA.sourceReference.tableHeader.toLowerCase().includes('restate')) ||
+      (factB.sourceReference.tableHeader && factB.sourceReference.tableHeader.toLowerCase().includes('restate'));
 
-    // 4. Rounding Variance (0.05% - 0.5%)
-    if (pctDiff <= 0.5) {
-      return {
-        discrepancyType: 'ROUNDING_VARIANCE',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
-        explanation: `Minor rounding variance (${pctDiff.toFixed(2)}% divergence between ₹${valA} Cr and ₹${valB} Cr across publications).`,
-        defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
-      };
-    }
-
-    // 5. Unit Variance (e.g. Lakhs precision truncation)
-    if (factA.originalUnit !== factB.originalUnit && pctDiff < 1.0) {
-      return {
-        discrepancyType: 'UNIT_VARIANCE',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
-        explanation: `Unit conversion precision difference between original units ${factA.originalUnit} and ${factB.originalUnit}.`,
-        defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
-      };
-    }
-
-    // 6. Restatement in Subsequent Annual Report
-    if (
+    const isDocADifferentFromDocB = factA.documentId !== factB.documentId || factA.documentName !== factB.documentName;
+    const isBothPrimary =
       factA.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED' &&
-      factB.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED' &&
-      factA.documentName !== factB.documentName &&
-      (factA.documentName.includes('AR') || factA.documentName.includes('Annual')) &&
-      (factB.documentName.includes('AR') || factB.documentName.includes('Annual'))
-    ) {
+      factB.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED';
+
+    if (isDocADifferentFromDocB && isBothPrimary && (isSubsequentDocYear || hasRestatementKeyword) && pctDiff > 0.05) {
       return {
         discrepancyType: 'RESTATEMENT',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
         explanation: `Financial figure restatement detected between prior annual report (${factA.documentName}) and comparative columns in subsequent report (${factB.documentName}).`,
         defaultResolutionStatus: 'RESOLVED_RESTATED',
       };
     }
 
-    // 7. Primary Filing vs Screenshot Definition Variance
-    if (
-      (factA.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED' && factB.provenanceSourceType === 'SCREENSHOT_DERIVED') ||
-      (factA.provenanceSourceType === 'SCREENSHOT_DERIVED' && factB.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED')
-    ) {
-      const primary = factA.provenanceSourceType === 'PRIMARY_SOURCE_DERIVED' ? factA : factB;
-      const screenshot = factA.provenanceSourceType === 'SCREENSHOT_DERIVED' ? factA : factB;
+    // 6. Currency Mismatch
+    const currA = factA.normalizedCurrency || factA.originalCurrency;
+    const currB = factB.normalizedCurrency || factB.originalCurrency;
+    if (currA && currB && currA !== currB) {
+      return {
+        discrepancyType: 'UNIT_VARIANCE',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Currency mismatch: ${currA} vs ${currB}. Foreign currency must not be silently reconciled without explicit conversion metadata.`,
+        defaultResolutionStatus: 'REQUIRES_ANALYST_CHOICE',
+      };
+    }
+
+    // 7. Unit Mismatch & Unit Conversion Precision Variance
+    if (factA.originalUnit !== factB.originalUnit) {
+      // If original units differed (e.g. Lakhs vs Crores) and the values differ slightly due to truncation
+      if (pctDiff < 2.0) {
+        return {
+          discrepancyType: 'UNIT_VARIANCE',
+          difference: roundedDiff,
+          percentageDiff: roundedPctDiff,
+          explanation: `Unit conversion precision difference between original units ${factA.originalUnit} and ${factB.originalUnit}.`,
+          defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
+        };
+      }
+    }
+
+    // 8. Source Type & Definition Divergence (Primary Filing vs Screenshot / Third-party)
+    const isScreenshotA = factA.provenanceSourceType === 'SCREENSHOT_DERIVED';
+    const isScreenshotB = factB.provenanceSourceType === 'SCREENSHOT_DERIVED';
+    if ((!isScreenshotA && isScreenshotB) || (isScreenshotA && !isScreenshotB)) {
+      const primary = isScreenshotA ? factB : factA;
+      const screenshot = isScreenshotA ? factA : factB;
       return {
         discrepancyType: 'SOURCE_DEFINITION_VARIANCE',
-        difference: Math.round(diff * 100) / 100,
-        percentageDiff: Math.round(pctDiff * 100) / 100,
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
         explanation: `Source definition divergence: Primary filing ${primary.documentName} reported ₹${primary.value} Cr while secondary screenshot ${screenshot.documentName} reported ₹${screenshot.value} Cr.`,
         defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
       };
     }
 
-    // 8. Material Conflict
+    // =========================================================================
+    // LAYER 2: NUMERICAL DIVERGENCE HEURISTICS (Only evaluated within same context)
+    // =========================================================================
+
+    // 9. Exact / Negligible Match (<0.05% tolerance)
+    if (pctDiff < 0.05) {
+      return {
+        discrepancyType: 'MATCH',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: 'Values match across documents within 0.05% tolerance.',
+        defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
+      };
+    }
+
+    // 10. Rounding Variance (0.05% - 0.5%)
+    if (pctDiff <= 0.5) {
+      return {
+        discrepancyType: 'ROUNDING_VARIANCE',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Minor rounding variance (${pctDiff.toFixed(2)}% divergence between ₹${valA} Cr and ₹${valB} Cr across publications).`,
+        defaultResolutionStatus: 'RESOLVED_PREFER_PRIMARY',
+      };
+    }
+
+    // 11. Genuine Material Conflict vs Unresolved
+    // Check if both sources are high confidence, verified primary facts with identical context
+    const isHighConfidenceA = factA.confidence >= 80 && factA.verificationStatus === 'VERIFIED';
+    const isHighConfidenceB = factB.confidence >= 80 && factB.verificationStatus === 'VERIFIED';
+    const isSameExtractionMethod = factA.extractionMethod === factB.extractionMethod;
+
+    if (isHighConfidenceA && isHighConfidenceB && isSameExtractionMethod) {
+      return {
+        discrepancyType: 'MATERIAL_CONFLICT',
+        difference: roundedDiff,
+        percentageDiff: roundedPctDiff,
+        explanation: `Material conflict (${pctDiff.toFixed(2)}% divergence) between verified sources ${factA.documentName} (₹${valA} Cr) and ${factB.documentName} (₹${valB} Cr) requires analyst resolution.`,
+        defaultResolutionStatus: 'REQUIRES_ANALYST_CHOICE',
+      };
+    }
+
+    // 12. Unresolved Discrepancy
+    // When reasons for divergence cannot be deterministically proved, do not force MATERIAL_CONFLICT
     return {
-      discrepancyType: 'MATERIAL_CONFLICT',
-      difference: Math.round(diff * 100) / 100,
-      percentageDiff: Math.round(pctDiff * 100) / 100,
-      explanation: `Material conflict (${pctDiff.toFixed(2)}% divergence) between ${factA.documentName} (₹${valA} Cr) and ${factB.documentName} (₹${valB} Cr) requires analyst resolution.`,
+      discrepancyType: 'UNRESOLVED',
+      difference: roundedDiff,
+      percentageDiff: roundedPctDiff,
+      explanation: `Unresolved discrepancy (${pctDiff.toFixed(2)}% divergence) between ${factA.documentName} (₹${valA} Cr) and ${factB.documentName} (₹${valB} Cr). Confidence, extraction method, or context is insufficient to determine definitive classification.`,
       defaultResolutionStatus: 'REQUIRES_ANALYST_CHOICE',
     };
   }

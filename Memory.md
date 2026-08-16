@@ -79,7 +79,7 @@ Phase 4 — Evidence Extraction & Financial Fact Reconstruction (Complete)
 
 ## Tests
 
-Unit: 103 passed / 103 total (100%)
+Unit: 106 passed / 106 total (100%)
 Integration: Scoped to Phase 16
 E2E: Scoped to Phase 16
 Typecheck: Passed (0 errors)
