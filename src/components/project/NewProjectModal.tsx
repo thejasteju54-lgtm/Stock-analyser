@@ -4,7 +4,11 @@ import {
   getAllSectors,
   getSubsectorsForSector,
   getSectorDefinition,
+  resolveDefaultBusinessModelForSector,
+  getAllBusinessModels,
+  getBusinessModelDefinition,
   SectorTaxonomyDefinition,
+  BusinessModelDefinition,
 } from '../../domain/taxonomy/SectorTaxonomyRegistry';
 import { createCompanyEntity, ExchangeType, MarketCapCategory } from '../../domain/models/Company';
 import { createResearchProject, ResearchProject } from '../../domain/models/ResearchProject';
@@ -30,6 +34,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [isin, setIsin] = useState('');
   const [sector, setSector] = useState(getAllSectors()[0] || 'Automobile');
   const [subsector, setSubsector] = useState('');
+  const [businessModel, setBusinessModel] = useState('NON_FINANCIAL_OPERATING');
   const [marketCapCategory, setMarketCapCategory] = useState<MarketCapCategory>('LARGE_CAP');
   const [primaryObjective, setPrimaryObjective] = useState(
     'Comprehensive 2-Year Fundamental, Forensic & Valuation Analysis'
@@ -43,15 +48,24 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   useEffect(() => {
     const subs = getSubsectorsForSector(sector);
     if (subs.length > 0) {
-      setSubsector(subs[0]);
+      setSubsector((prev) => (subs.includes(prev) ? prev : subs[0]));
     } else {
       setSubsector('');
     }
   }, [sector]);
 
+  // Synchronize business model when sector or subsector changes
+  useEffect(() => {
+    const defaultModel = resolveDefaultBusinessModelForSector(sector, subsector);
+    setBusinessModel(defaultModel);
+  }, [sector, subsector]);
+
   if (!isOpen) return null;
 
   const currentSectorDef: SectorTaxonomyDefinition | undefined = getSectorDefinition(sector);
+  const currentBusinessModelDef: BusinessModelDefinition | undefined =
+    getBusinessModelDefinition(businessModel) || getBusinessModelDefinition('NON_FINANCIAL_OPERATING');
+  const allBusinessModels = getAllBusinessModels();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +82,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
         isin: isin.trim() || undefined,
         sector,
         subsector,
+        businessModel,
         marketCapCategory,
       });
 
@@ -116,8 +131,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
           border: '1px solid var(--border-default)',
           borderRadius: '6px',
           width: '100%',
-          maxWidth: '680px',
-          maxHeight: '90vh',
+          maxWidth: '720px',
+          maxHeight: '92vh',
           overflowY: 'auto',
           boxShadow: 'var(--shadow-lg)',
           display: 'flex',
@@ -365,8 +380,42 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             </div>
           </div>
 
-          {/* Dynamic Sector Taxonomy Preview & Applicable Models Gate */}
-          {currentSectorDef && (
+          {/* Row 4: Configurable Business Model Classification */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <label htmlFor="select-business-model" style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                ECONOMIC BUSINESS MODEL ARCHETYPE *
+              </label>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                Configurable model routing engine
+              </span>
+            </div>
+            <select
+              id="select-business-model"
+              value={businessModel}
+              onChange={(e) => setBusinessModel(e.target.value)}
+              style={{
+                width: '100%',
+                background: 'var(--bg-surface-raised)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '3px',
+                padding: '7px 10px',
+                color: 'var(--color-brand)',
+                fontWeight: 600,
+                fontSize: '12px',
+                outline: 'none',
+              }}
+            >
+              {allBusinessModels.map((bm) => (
+                <option key={bm.code} value={bm.code}>
+                  {bm.code} — {bm.displayName} ({bm.economicArchetype.replace(/_/g, ' ')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Dynamic Business Model & Sector Preview / Gated Models */}
+          {currentBusinessModelDef && (
             <div
               style={{
                 background: 'var(--bg-surface-raised)',
@@ -383,22 +432,25 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Layers size={13} color="#38bdf8" />
                   <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    BUSINESS MODEL: {currentSectorDef.businessModel}
+                    BUSINESS MODEL: {currentBusinessModelDef.code}
                   </span>
                 </div>
-                <Badge variant="cyan">{currentSectorDef.sector}</Badge>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <Badge variant="cyan">{currentBusinessModelDef.economicArchetype.replace(/_/g, ' ')}</Badge>
+                  {currentSectorDef && <Badge variant="neutral">{currentSectorDef.sector}</Badge>}
+                </div>
               </div>
 
               <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                {currentSectorDef.description}
+                {currentBusinessModelDef.description}
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)' }}>
                   GATED FORENSIC MODELS:
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {currentSectorDef.applicableForensicModels.map((m) => (
+                  {currentBusinessModelDef.applicableForensicModels.map((m) => (
                     <Badge key={m} variant="neutral">
                       {m}
                     </Badge>
@@ -406,22 +458,48 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)' }}>
                   GATED VALUATION FRAMEWORKS:
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {currentSectorDef.applicableValuationModels.map((v) => (
+                  {currentBusinessModelDef.applicableValuationModels.map((v) => (
                     <Badge key={v} variant="bullish">
                       {v}
                     </Badge>
                   ))}
                 </div>
               </div>
+
+              {currentBusinessModelDef.applicableMetrics && currentBusinessModelDef.applicableMetrics.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    PRIMARY FINANCIAL METRICS:
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {currentBusinessModelDef.applicableMetrics.map((met) => (
+                      <span
+                        key={met}
+                        style={{
+                          fontSize: '10px',
+                          padding: '2px 6px',
+                          borderRadius: '2px',
+                          background: 'rgba(56, 189, 248, 0.1)',
+                          color: '#38bdf8',
+                          border: '1px solid rgba(56, 189, 248, 0.2)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        {met}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Row 4: Optional ISIN & Investment Horizon */}
+          {/* Row 5: Optional ISIN & Investment Horizon */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label htmlFor="input-isin" style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 600 }}>

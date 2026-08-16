@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { TerminalRoute } from '../types';
 import { ResearchProject } from '../domain/models/ResearchProject';
-import { getSectorDefinition } from '../domain/taxonomy/SectorTaxonomyRegistry';
+import { getSectorDefinition, getBusinessModelDefinition } from '../domain/taxonomy/SectorTaxonomyRegistry';
 import { ProjectStorage } from '../domain/storage/ProjectStorage';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
@@ -36,6 +36,9 @@ export const OverviewView: React.FC<RouteViewProps> = ({
 }) => {
   const company = activeProject?.company;
   const sectorDef = company ? getSectorDefinition(company.sector) : undefined;
+  const businessModelDef = company
+    ? getBusinessModelDefinition(company.businessModel) || getBusinessModelDefinition('NON_FINANCIAL_OPERATING')
+    : undefined;
   const allProjects = ProjectStorage.listProjects();
 
   return (
@@ -86,7 +89,7 @@ export const OverviewView: React.FC<RouteViewProps> = ({
       </div>
 
       {/* Row 1: Active Target Taxonomic Profile & Gated Models */}
-      {company && sectorDef && (
+      {company && sectorDef && businessModelDef && (
         <Card
           title={`Active Target Profile: ${company.legalName}`}
           icon={<Building size={14} color="#38bdf8" />}
@@ -111,9 +114,12 @@ export const OverviewView: React.FC<RouteViewProps> = ({
                 <span style={{ color: 'var(--text-secondary)' }}>Subsector Vertical:</span>
                 <span style={{ color: 'var(--text-primary)' }}>{company.subsector}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Business Model:</span>
-                <Badge variant="neutral">{company.businessModel}</Badge>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <Badge variant="cyan">{company.businessModel}</Badge>
+                  <Badge variant="neutral">{businessModelDef.economicArchetype.replace(/_/g, ' ')}</Badge>
+                </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Market Cap Category:</span>
@@ -131,13 +137,13 @@ export const OverviewView: React.FC<RouteViewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
                 <Scale size={13} color="#f59e0b" />
-                <span>Applicable Forensic Engines (Gated)</span>
+                <span>Applicable Forensic Engines ({businessModelDef.code})</span>
               </div>
               <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                {sectorDef.description}
+                {businessModelDef.description}
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                {sectorDef.applicableForensicModels.map((m) => (
+                {businessModelDef.applicableForensicModels.map((m) => (
                   <Badge key={m} variant="neutral">
                     {m}
                   </Badge>
@@ -149,10 +155,10 @@ export const OverviewView: React.FC<RouteViewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
                 <Calculator size={13} color="#10b981" />
-                <span>Applicable Valuation Models (Gated)</span>
+                <span>Applicable Valuation Models ({businessModelDef.code})</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {sectorDef.applicableValuationModels.map((v) => (
+                {businessModelDef.applicableValuationModels.map((v) => (
                   <Badge key={v} variant="bullish">
                     {v}
                   </Badge>

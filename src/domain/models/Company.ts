@@ -1,4 +1,8 @@
-import { BusinessModelType, SECTOR_TAXONOMY_REGISTRY } from '../taxonomy/SectorTaxonomyRegistry';
+import {
+  SECTOR_TAXONOMY_REGISTRY,
+  resolveDefaultBusinessModelForSector,
+  isBusinessModelRegistered,
+} from '../taxonomy/SectorTaxonomyRegistry';
 
 export type ExchangeType = 'NSE' | 'BSE';
 export type MarketCapCategory = 'LARGE_CAP' | 'MID_CAP' | 'SMALL_CAP' | 'MICRO_CAP';
@@ -13,7 +17,7 @@ export interface CompanyIdentity {
   cin?: string; // Corporate Identification Number
   sector: string; // from SectorTaxonomy
   subsector: string;
-  businessModel: BusinessModelType;
+  businessModel: string; // from BusinessModelRegistry (e.g. BANKING, HFC, REIT, NON_FINANCIAL_OPERATING)
   marketCapCategory: MarketCapCategory;
   createdAt: string;
   updatedAt: string;
@@ -59,6 +63,12 @@ export function validateCompanyIdentity(data: Partial<CompanyIdentity>): Validat
     }
   }
 
+  if (data.businessModel && data.businessModel.trim().length > 0) {
+    if (!isBusinessModelRegistered(data.businessModel)) {
+      errors.push(`Business model "${data.businessModel}" is not recognized in the BusinessModel registry.`);
+    }
+  }
+
   if (data.isin && !/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(data.isin.trim().toUpperCase())) {
     errors.push('ISIN must follow standard 12-character format (e.g. INE155A01022).');
   }
@@ -78,14 +88,22 @@ export function createCompanyEntity(input: {
   cin?: string;
   sector: string;
   subsector: string;
+  businessModel?: string;
   marketCapCategory?: MarketCapCategory;
 }): CompanyIdentity {
-  const validation = validateCompanyIdentity(input);
+  const resolvedBusinessModel =
+    input.businessModel?.trim().toUpperCase() ||
+    resolveDefaultBusinessModelForSector(input.sector, input.subsector);
+
+  const validation = validateCompanyIdentity({
+    ...input,
+    businessModel: resolvedBusinessModel,
+  });
+
   if (!validation.isValid) {
     throw new Error(`Cannot create company entity: ${validation.errors.join(', ')}`);
   }
 
-  const sectorDef = SECTOR_TAXONOMY_REGISTRY[input.sector];
   const now = new Date().toISOString();
   const cleanSymbol = input.symbol.trim().toUpperCase();
   const cleanName = input.legalName.trim();
@@ -101,7 +119,7 @@ export function createCompanyEntity(input: {
     cin: input.cin?.trim().toUpperCase(),
     sector: input.sector,
     subsector: input.subsector,
-    businessModel: sectorDef.businessModel,
+    businessModel: resolvedBusinessModel,
     marketCapCategory: input.marketCapCategory || 'MID_CAP',
     createdAt: now,
     updatedAt: now,

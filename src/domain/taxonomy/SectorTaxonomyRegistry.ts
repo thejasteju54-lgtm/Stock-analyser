@@ -1,37 +1,40 @@
-export type BusinessModelType =
-  | 'NON_FINANCIAL_OPERATING'
-  | 'BANKING'
-  | 'NBFC'
-  | 'INSURANCE'
-  | 'REAL_ESTATE_TRUST'
-  | 'PROJECT_INFRA'
-  | 'UTILITY';
+import {
+  ForensicModelId,
+  ValuationModelId,
+  BusinessModelDefinition,
+  EconomicArchetype,
+  getBusinessModelDefinition,
+  getAllBusinessModels,
+  getAllBusinessModelCodes,
+  isBusinessModelRegistered,
+  registerBusinessModel,
+  isForensicModelApplicableToBusinessModel,
+  isValuationModelApplicableToBusinessModel,
+} from './BusinessModelRegistry';
 
-export type ForensicModelId =
-  | 'BENEISH_M_SCORE'
-  | 'ALTMAN_Z_SCORE'
-  | 'WORKING_CAPITAL_CYCLE'
-  | 'CFO_PAT_DIVERGENCE'
-  | 'NPA_PCR_QUALITY'
-  | 'REST_ASSET_MONITOR'
-  | 'RELATED_PARTY_LENDING'
-  | 'SOLVENCY_LEVERAGE'
-  | 'CAPITAL_DILUTION';
+// Re-export business model taxonomy primitives for unified access
+export {
+  type ForensicModelId,
+  type ValuationModelId,
+  type BusinessModelDefinition,
+  type EconomicArchetype,
+  getBusinessModelDefinition,
+  getAllBusinessModels,
+  getAllBusinessModelCodes,
+  isBusinessModelRegistered,
+  registerBusinessModel,
+  isForensicModelApplicableToBusinessModel,
+  isValuationModelApplicableToBusinessModel,
+};
 
-export type ValuationModelId =
-  | 'DCF'
-  | 'EV_EBITDA'
-  | 'PE'
-  | 'PB_ABV'
-  | 'FCF_YIELD'
-  | 'NAV'
-  | 'EMBEDDED_VALUE'
-  | 'DIVIDEND_DISCOUNT';
+// Extensible BusinessModelType (string-backed for dynamic registry models)
+export type BusinessModelType = string;
 
 export interface SectorTaxonomyDefinition {
   sector: string;
   subsectors: string[];
-  businessModel: BusinessModelType;
+  businessModel: string; // Default business model code
+  subsectorBusinessModelMap?: Record<string, string>; // Specialized subsector-to-business-model mappings
   applicableMetrics: string[];
   applicableForensicModels: ForensicModelId[];
   applicableValuationModels: ValuationModelId[];
@@ -52,6 +55,10 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
     sector: 'NBFC',
     subsectors: ['Housing Finance (HFC)', 'Vehicle Finance', 'Gold Loan NBFC', 'Microfinance (MFI)', 'Diversified NBFC'],
     businessModel: 'NBFC',
+    subsectorBusinessModelMap: {
+      'Housing Finance (HFC)': 'HFC',
+      'Microfinance (MFI)': 'MICROFINANCE',
+    },
     applicableMetrics: ['AUM_GROWTH', 'NIM', 'STAGE_3_ASSETS', 'PCR', 'ALM_MISMATCH', 'SPREAD', 'ROA', 'ROE'],
     applicableForensicModels: ['NPA_PCR_QUALITY', 'REST_ASSET_MONITOR', 'RELATED_PARTY_LENDING', 'SOLVENCY_LEVERAGE'],
     applicableValuationModels: ['PB_ABV', 'PE', 'DIVIDEND_DISCOUNT'],
@@ -62,9 +69,23 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
     subsectors: ['Life Insurance', 'General Insurance', 'Health Insurance', 'Reinsurance'],
     businessModel: 'INSURANCE',
     applicableMetrics: ['VNB_MARGIN', 'EMBEDDED_VALUE', 'AUM', 'SOLVENCY_RATIO', 'COMBINED_RATIO', 'PERSISTENCY_13M', 'PERSISTENCY_61M'],
-    applicableForensicModels: ['SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING', 'CAPITAL_DILUTION'],
+    applicableForensicModels: ['SOLVENCY_LEVERAGE', 'UNDERWRITING_QUALITY', 'RELATED_PARTY_LENDING', 'CAPITAL_DILUTION'],
     applicableValuationModels: ['EMBEDDED_VALUE', 'PB_ABV', 'PE'],
     description: 'Underwriting and risk protection business measured via Embedded Value and Value of New Business.',
+  },
+  'Financial Services': {
+    sector: 'Financial Services',
+    subsectors: ['Asset Management (AMC)', 'Stock Exchanges & Depositories', 'Retail Wealth & Brokerages', 'Credit Rating Agencies'],
+    businessModel: 'NON_FINANCIAL_OPERATING',
+    subsectorBusinessModelMap: {
+      'Asset Management (AMC)': 'ASSET_MANAGEMENT',
+      'Stock Exchanges & Depositories': 'STOCK_EXCHANGE',
+      'Retail Wealth & Brokerages': 'BROKERAGE',
+    },
+    applicableMetrics: ['AAUM', 'EQUITY_AUM_MIX', 'MARKET_SHARE_TURNOVER', 'CORE_EBIT_MARGIN', 'ROCE', 'ROE', 'FCF_CONVERSION'],
+    applicableForensicModels: ['REVENUE_RECOGNITION', 'BENEISH_M_SCORE', 'ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE'],
+    applicableValuationModels: ['PE', 'FCF_YIELD', 'DCF', 'DIVIDEND_DISCOUNT'],
+    description: 'Capital market intermediaries with capital-light business models and high operating margins.',
   },
   'IT Services': {
     sector: 'IT Services',
@@ -78,7 +99,7 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   Pharma: {
     sector: 'Pharma',
     subsectors: ['Generic Formulations', 'Active Pharma Ingredients (API)', 'Contract Development & Mfg (CDMO)', 'Domestic Formulations'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
+    businessModel: 'PHARMA',
     applicableMetrics: ['US_GENERIC_SALES', 'DOMESTIC_FORMULATION_GROWTH', 'EBITDA_MARGIN', 'RND_PCT_SALES', 'FDA_OBSERVATIONS', 'ROCE'],
     applicableForensicModels: ['BENEISH_M_SCORE', 'ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE'],
     applicableValuationModels: ['EV_EBITDA', 'PE', 'DCF'],
@@ -87,7 +108,7 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   Healthcare: {
     sector: 'Healthcare',
     subsectors: ['Hospitals & Chains', 'Diagnostic Laboratories', 'Medical Devices', 'Pharmacy Retail'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
+    businessModel: 'HEALTHCARE',
     applicableMetrics: ['ARPOB', 'OCCUPANCY_RATE', 'OPERATING_BEDS', 'EBITDA_PER_BED', 'TESTS_PER_PATIENT', 'ROCE'],
     applicableForensicModels: ['BENEISH_M_SCORE', 'ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE'],
     applicableValuationModels: ['EV_EBITDA', 'PE', 'DCF'],
@@ -143,8 +164,8 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
     subsectors: ['EPC Contractors', 'Highways & Roads (HAM/BOT)', 'Ports & Marine Infra', 'Water & Urban Infra'],
     businessModel: 'PROJECT_INFRA',
     applicableMetrics: ['ORDER_BOOK_TO_SALES', 'WORKING_CAPITAL_DAYS', 'DEBT_TO_EQUITY', 'INTEREST_COVERAGE', 'BID_WIN_RATIO', 'ROCE'],
-    applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE', 'SOLVENCY_LEVERAGE'],
-    applicableValuationModels: ['EV_EBITDA', 'PE', 'NAV'],
+    applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE', 'SOLVENCY_LEVERAGE', 'PROJECT_EXECUTION_RISK'],
+    applicableValuationModels: ['EV_EBITDA', 'PE', 'NAV', 'SOTP'],
     description: 'Contracting and asset developers with long working capital cycles and debt-funded concessions.',
   },
   Power: {
@@ -168,10 +189,10 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   Telecom: {
     sector: 'Telecom',
     subsectors: ['Telecom Service Providers (Telcos)', 'Telecom Towers', 'Optic Fibre & Optical Infra'],
-    businessModel: 'UTILITY',
+    businessModel: 'TELECOM',
     applicableMetrics: ['ARPU', 'SUBSCRIBER_BASE', 'DATA_CONSUMPTION_PER_USER', 'CHURN_RATE', 'SPECTRUM_DEBT', 'EBITDA_MARGIN'],
     applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'SOLVENCY_LEVERAGE'],
-    applicableValuationModels: ['EV_EBITDA', 'DCF'],
+    applicableValuationModels: ['EV_EBITDA', 'ARPU_MULTIPLE', 'DCF'],
     description: 'High-capex network operators dependent on ARPU expansion and spectrum asset management.',
   },
   Chemicals: {
@@ -186,16 +207,16 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   Metals: {
     sector: 'Metals',
     subsectors: ['Ferrous (Steel)', 'Non-Ferrous (Aluminium, Copper, Zinc)', 'Pipes & Tubes'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
+    businessModel: 'COMMODITY',
     applicableMetrics: ['EBITDA_PER_TONNE', 'CAPACITY_UTILISATION', 'LME_PRICE_REALISATION', 'DEBT_TO_EBITDA', 'INTEGRATION_RATIO', 'ROCE'],
     applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE', 'SOLVENCY_LEVERAGE'],
-    applicableValuationModels: ['EV_EBITDA', 'PB_ABV', 'PE'],
+    applicableValuationModels: ['EV_EBITDA', 'PB_ABV', 'PE', 'REPLACEMENT_COST'],
     description: 'Cyclical commodities with earnings dictated by global price benchmarks and operating spreads.',
   },
   Mining: {
     sector: 'Mining',
     subsectors: ['Coal Mining', 'Iron Ore Mining', 'Lignite & Rare Minerals'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
+    businessModel: 'COMMODITY',
     applicableMetrics: ['PRODUCTION_VOLUME', 'OFFTAKE_VOLUME', 'REALISATION_PER_TONNE', 'STRIPPING_RATIO', 'DIVIDEND_YIELD', 'ROCE'],
     applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE'],
     applicableValuationModels: ['EV_EBITDA', 'FCF_YIELD', 'PE'],
@@ -213,7 +234,7 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   'Real Estate': {
     sector: 'Real Estate',
     subsectors: ['Residential Developers', 'Commercial Office Developers', 'Retail Mall Operators', 'Plotted / Industrial Parks'],
-    businessModel: 'PROJECT_INFRA',
+    businessModel: 'REAL_ESTATE',
     applicableMetrics: ['PRE_SALES_BOOKINGS', 'COLLECTION_EFFICIENCY', 'NET_DEBT_TO_EQUITY', 'LAND_BANK_ACRES', 'LAUNCH_PIPELINE_MSF'],
     applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE', 'SOLVENCY_LEVERAGE'],
     applicableValuationModels: ['NAV', 'EV_EBITDA', 'PE'],
@@ -222,19 +243,19 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   REIT: {
     sector: 'REIT',
     subsectors: ['Commercial Office REIT', 'Retail Mall REIT', 'Industrial & Logistics REIT'],
-    businessModel: 'REAL_ESTATE_TRUST',
+    businessModel: 'REIT',
     applicableMetrics: ['NET_OPERATING_INCOME_NOI', 'DISTRIBUTION_YIELD', 'OCCUPANCY_RATE', 'WALE_YEARS', 'LOAN_TO_VALUE_LTV', 'NAV_PER_UNIT'],
-    applicableForensicModels: ['SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING'],
-    applicableValuationModels: ['NAV', 'DIVIDEND_DISCOUNT'],
+    applicableForensicModels: ['NAV_DISCOUNT_MONITOR', 'SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING'],
+    applicableValuationModels: ['NAV', 'DIVIDEND_DISCOUNT', 'SOTP'],
     description: 'Yield-generating real estate investment trusts with mandatory 90% NDCF distribution mandate.',
   },
   InvIT: {
     sector: 'InvIT',
     subsectors: ['Highways & Toll InvIT', 'Power Transmission InvIT', 'Gas Pipeline InvIT', 'Telecom Infra InvIT'],
-    businessModel: 'REAL_ESTATE_TRUST',
+    businessModel: 'INVIT',
     applicableMetrics: ['DISTRIBUTABLE_CASH_FLOW', 'DISTRIBUTION_YIELD', 'CONCESSION_PERIOD_REMAINING', 'LTV_RATIO', 'NAV_PER_UNIT'],
-    applicableForensicModels: ['SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING'],
-    applicableValuationModels: ['NAV', 'DIVIDEND_DISCOUNT'],
+    applicableForensicModels: ['NAV_DISCOUNT_MONITOR', 'SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING'],
+    applicableValuationModels: ['NAV', 'DIVIDEND_DISCOUNT', 'DCF'],
     description: 'Infrastructure investment trusts providing predictable yield from operational infrastructure assets.',
   },
   Defence: {
@@ -291,22 +312,13 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
     applicableValuationModels: ['EV_EBITDA', 'PE', 'DCF'],
     description: 'High-precision engineering and custom industrial production with export exposure.',
   },
-  'Financial Services': {
-    sector: 'Financial Services',
-    subsectors: ['Asset Management (AMC)', 'Stock Exchanges & Depositories', 'Retail Wealth & Brokerages', 'Credit Rating Agencies'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
-    applicableMetrics: ['AAUM', 'EQUITY_AUM_MIX', 'MARKET_SHARE_TURNOVER', 'CORE_EBIT_MARGIN', 'ROCE', 'ROE', 'FCF_CONVERSION'],
-    applicableForensicModels: ['BENEISH_M_SCORE', 'ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE'],
-    applicableValuationModels: ['PE', 'FCF_YIELD', 'DCF', 'DIVIDEND_DISCOUNT'],
-    description: 'Capital market intermediaries with capital-light business models and high operating margins.',
-  },
   Diversified: {
     sector: 'Diversified',
     subsectors: ['Multi-Industry Conglomerate', 'Holding Company', 'Diversified Industrial Group'],
-    businessModel: 'NON_FINANCIAL_OPERATING',
+    businessModel: 'DIVERSIFIED',
     applicableMetrics: ['CONSOLIDATED_EBITDA', 'SUBSIDIARY_DEBT', 'HOLDING_CO_DISCOUNT', 'ROCE_CONSOLIDATED'],
-    applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'SOLVENCY_LEVERAGE'],
-    applicableValuationModels: ['NAV', 'EV_EBITDA', 'PE'],
+    applicableForensicModels: ['ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'SOLVENCY_LEVERAGE', 'RELATED_PARTY_LENDING'],
+    applicableValuationModels: ['SOTP', 'NAV', 'EV_EBITDA', 'PE'],
     description: 'Multi-business conglomerates requiring sum-of-the-parts (SOTP) evaluation and holding company discount.',
   },
 };
@@ -323,14 +335,46 @@ export function getSubsectorsForSector(sectorName: string): string[] {
   return SECTOR_TAXONOMY_REGISTRY[sectorName]?.subsectors || [];
 }
 
-export function isForensicModelApplicable(sectorName: string, modelId: ForensicModelId): boolean {
+export function resolveDefaultBusinessModelForSector(
+  sectorName: string,
+  subsectorName?: string
+): string {
+  const def = SECTOR_TAXONOMY_REGISTRY[sectorName];
+  if (!def) return 'NON_FINANCIAL_OPERATING';
+  if (subsectorName && def.subsectorBusinessModelMap?.[subsectorName]) {
+    return def.subsectorBusinessModelMap[subsectorName];
+  }
+  return def.businessModel || 'NON_FINANCIAL_OPERATING';
+}
+
+export function isForensicModelApplicable(
+  sectorName: string,
+  modelId: ForensicModelId,
+  businessModelOverride?: string
+): boolean {
+  if (businessModelOverride && isBusinessModelRegistered(businessModelOverride)) {
+    return isForensicModelApplicableToBusinessModel(businessModelOverride, modelId);
+  }
   const def = SECTOR_TAXONOMY_REGISTRY[sectorName];
   if (!def) return false;
+  if (def.businessModel && isBusinessModelRegistered(def.businessModel)) {
+    return isForensicModelApplicableToBusinessModel(def.businessModel, modelId);
+  }
   return def.applicableForensicModels.includes(modelId);
 }
 
-export function isValuationModelApplicable(sectorName: string, modelId: ValuationModelId): boolean {
+export function isValuationModelApplicable(
+  sectorName: string,
+  modelId: ValuationModelId,
+  businessModelOverride?: string
+): boolean {
+  if (businessModelOverride && isBusinessModelRegistered(businessModelOverride)) {
+    return isValuationModelApplicableToBusinessModel(businessModelOverride, modelId);
+  }
   const def = SECTOR_TAXONOMY_REGISTRY[sectorName];
   if (!def) return false;
+  if (def.businessModel && isBusinessModelRegistered(def.businessModel)) {
+    return isValuationModelApplicableToBusinessModel(def.businessModel, modelId);
+  }
   return def.applicableValuationModels.includes(modelId);
 }
