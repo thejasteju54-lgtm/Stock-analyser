@@ -23,3 +23,5 @@ Thumbs.db
 .gemini/
 *.tmp
 *.swp
+.agents/rules/walkthrough*
+.agents/rules/implementation_plan*

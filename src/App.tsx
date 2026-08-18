@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -107,9 +107,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 6,
+    activePhase: 7,
     dataQualityStatus: 'PENDING',
-    memoryState: 'Phase 6: Fundamental Health Analysis Active (Evidence-Driven, Sector-Gated, Weight-Renormalized)',
+    memoryState: 'Phase 7: Forensic Accounting & Red-Flag Engine Active (Deterministic, Provenance-Backed, Severity Gated)',
   });
 
   // Re-sync active project if needed
@@ -184,6 +184,18 @@ export const App: React.FC = () => {
                 <FinancialCalculationsView />
               </div>
             )
+          ) : activeRoute === 'forensic' ? (
+            <ForensicInvestigationView
+              currentProject={activeProject}
+              onNavigateToCalculations={() => {
+                handleRouteChange('fundamentals');
+                setFundamentalsViewMode('CALCULATIONS');
+              }}
+              onNavigateToFundamentals={() => {
+                handleRouteChange('fundamentals');
+                setFundamentalsViewMode('HEALTH');
+              }}
+            />
           ) : (
             <PhasePlaceholderView
               route={activeRoute}

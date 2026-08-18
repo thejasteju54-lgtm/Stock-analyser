@@ -40,12 +40,16 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
   it('switches views when clicking a navigation item in SideNav', () => {
     render(<App />);
 
+    // Test navigating to Phase 7 Forensic module
     const forensicNavButton = screen.getByRole('button', { name: /Forensic Accounting/i });
     fireEvent.click(forensicNavButton);
+    expect(screen.getByText(/Forensic Accounting & Earnings-Quality Investigation/i)).toBeInTheDocument();
 
-    // Verify view changed to Forensic placeholder
-    expect(screen.getByText(/Forensic Accounting & Red-Flag Matrix/i)).toBeInTheDocument();
-    expect(screen.getByText(/SCOPED TO PHASE 7/i)).toBeInTheDocument();
+    // Test navigating to Phase 9 Valuation placeholder
+    const valNavButton = screen.getByRole('button', { name: /Sector Valuation/i });
+    fireEvent.click(valNavButton);
+    expect(screen.getByText(/Sector-Aware Valuation Models/i)).toBeInTheDocument();
+    expect(screen.getByText(/SCOPED TO PHASE 9/i)).toBeInTheDocument();
 
     // Click Return to Overview
     const backBtn = screen.getByRole('button', { name: /Return to Overview/i });

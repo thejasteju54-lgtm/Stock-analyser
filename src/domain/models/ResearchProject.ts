@@ -7,6 +7,7 @@ import {
 } from '../extraction/FinancialFactTypes';
 import { CalculatedMetric } from '../calculations/CalculationTypes';
 import { FundamentalHealthAnalysis } from '../analysis/FundamentalHealthTypes';
+import { ForensicAnalysisReport } from '../forensics/ForensicAnalysisTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -34,6 +35,7 @@ export interface ResearchProject {
   contradictions?: ContradictionRecord[];
   calculatedMetrics?: CalculatedMetric[];
   fundamentalAnalysis?: FundamentalHealthAnalysis;
+  forensicAnalysis?: ForensicAnalysisReport;
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;
