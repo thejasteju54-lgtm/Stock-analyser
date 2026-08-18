@@ -17,26 +17,27 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 9 — Sector-Aware Valuation Engine (Complete)
+Phase 10 — Technical Analysis & Price-Action Intelligence Engine (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with pure deterministic Sector-Aware Valuation Engine (`SectorValuationEngine.ts`) executing 10 valuation pipelines:
-  1. Relative Multiples Pipeline (PE, PB, EV/EBITDA, EV/Sales, FCF Yield, Dividend Yield, PEG with negative EPS/EBITDA `NOT_MEANINGFUL` guardrails).
-  2. Peer Selection & Outlier Filtering Engine (`PeerSelectionEngine.ts`) with relevance scoring (0-100), statistical IQR outlier filtering, and peer median calculation.
-  3. Historical Valuation Bands Service (`HistoricalValuationDataService.ts`) computing 3Y and 5Y point-in-time trading ranges, quartiles, and current percentile rank.
-  4. FCFF DCF Intrinsic Engine with 3 explicit scenarios (Bear, Base, Bull), CAPM WACC bridge (Risk-free rate + Beta * ERP), and Gordon Growth terminal bounds ($WACC > g$).
-  5. 2D DCF Sensitivity Matrix evaluating value per share across WACC ($\pm 1\%$) and Terminal Growth Rate ($\pm 0.5\%$).
-  6. Reverse DCF (Embedded Expectations Solver) using high-precision bisection solver ($< 0.001$ tolerance) to deduce market-implied revenue CAGR, margin, and ROCE, objectively classified against historical performance and management guidance.
-  7. Sum-of-the-Parts (SOTP), Net Asset Value (NAV), and Dividend Discount Model (DDM) with holding company discount adjustments.
-  8. Valuation Assumption Ledger (`ValuationAssumption`) preserving classification (`HISTORICAL_FACT`, `MANAGEMENT_GUIDANCE`, `EXTERNAL_ESTIMATE`, `ANALYST_ASSUMPTION`, `MODEL_DERIVED`), date, and confidence.
-  9. Dynamic Valuation Triangulation (`ValuationWeightPolicyRegistry`) computing model-specific weighted intrinsic fair value and multi-scenario margin of safety (MoS vs Bear, Base, Bull).
-  10. Deterministic Valuation Position Classifier (`ValuationPositionPolicy`) assigning `DEEP_DISCOUNT`, `DISCOUNT`, `AROUND_FAIR_RANGE`, `PREMIUM`, `EXTREME_PREMIUM`, or `NOT_ASSESSABLE` with zero BUY/HOLD/AVOID investment recommendations.
-- Phase 9 UI components & route `/valuation` fully integrated: `SectorValuationView`, `ValuationOverviewCard`, `RelativeValuationCard`, `HistoricalValuationCard`, `PeerComparisonCard`, `DcfScenarioCard`, `DcfSensitivityCard`, `EmbeddedExpectationsCard`, `ValuationTriangulationCard`, and `SotpValuationModal`.
+- React 19 + TypeScript + Vite terminal with pure deterministic Technical Analysis Engine (`TechnicalAnalysisEngine.ts`) executing 8 primary analytical pipelines plus 2 synthesis layers:
+  1. Trend & Market Structure Pipeline (`MarketStructureEngine.ts`) with point-in-time ATR swing detector ($1.5\times$ ATR prominence, 4 min bars, 3 confirmation bars), separated candidate vs confirmation timestamps to prevent look-ahead bias, HH/HL and LH/LL structure counts, and structure break events (BOS/CHOCH).
+  2. Moving Average & Regime Pipeline (`MovingAverageRegime`) evaluating 20, 50, 100, 200 SMA/EMA alignments (`BULLISH_ALIGNMENT`, `BEARISH_ALIGNMENT`, `MIXED_ALIGNMENT`, `INSUFFICIENT_DATA`), slope angles, and Golden/Death cross regimes.
+  3. Momentum Pipeline (`MomentumAssessment`) computing Wilder's 14-period smoothed RSI, MACD (12, 26, 9 EMA), and 14-period Rate of Change (ROC), with historical elevated context (>70) and oversold bounds (<30).
+  4. Volume Dynamics Pipeline (`VolumeAssessment`) with strict UpVolume ($Close > PrevClose$) vs DownVolume ($Close < PrevClose$), RVOL 20, volume expansion/contraction, and explicit high-volume multi-interpretation warnings.
+  5. Volatility & Drawdown Pipeline (`VolatilityRegime`) computing Wilder's 14-period ATR, ATR %, Volatility Regimes (`LOW`, `NORMAL`, `ELEVATED`, `EXTREME`), 52-week trading range bounds, and peak-to-trough historical maximum drawdown.
+  6. Support/Resistance & Breakout Tracker (`SupportResistanceZone`, `BreakoutEvent`) with ATR-normalized horizontal clustering, touch/rejection counts, zone merging ($< 1.0\times$ ATR), and volume-confirmed breakout evaluation ($RVOL \ge 1.4\times$).
+  7. Divergence Sentinel (`DivergenceDetector.ts`) identifying regular bullish and bearish divergences on RSI and MACD against confirmed price swings.
+  8. Relative Strength Benchmarking (`RelativeStrengthAssessment`) evaluating stock alpha against NIFTY 50 and Sector Index across 1M, 3M, 6M, and 1Y horizons, with strict `NOT_ASSESSABLE` fallback when sector benchmarks are missing.
+  9. Market Cycle Synthesis Layer (`MarketCycleAssessment`) evaluating `ACCUMULATION`, `MARKUP`, `DISTRIBUTION`, `MARKDOWN`, and `RANGE_TRANSITION` without claiming institutional intent.
+  10. Technical Risk Synthesis Layer (`TechnicalRiskAssessment`) evaluating setup fragility score (0-100), contributing risk factors, and setup invalidation thresholds.
+- Pure Screenshot Observation Mode (`ScreenshotTechnicalObservation`) maintaining qualitative visual chart observations without numerical indicator fabrication.
+- Phase 10 UI components & route `/technical` fully integrated: `TechnicalAnalysisView`, `TechnicalOverviewCard`, `PriceChartCard` (interactive SVG candle chart with toggleable 20/50/200 DMA overlays and S/R bands), `TrendStructureCard`, `SupportResistanceCard`, `MomentumOscillatorsCard`, `VolumeAnalysisCard`, `VolatilityDrawdownCard`, `RelativeStrengthCard`, `TechnicalRiskCard`, and `ScreenshotObservationModal`.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
 - Lint: PASSED (0 errors via `npm.cmd run lint`).
-- Unit Tests: 230/230 PASSED across 64 test files (9 dedicated Phase 9 suites + 55 previous suites).
-- Build: PASSED (`npm.cmd run build` transformed 1889 modules into clean production bundle in 6.93s).
+- Unit Tests: 257/257 PASSED across 73 test suites (9 dedicated Phase 10 suites + 64 previous suites).
+- Build: PASSED (`npm.cmd run build` transformed 1905 modules into clean production bundle in 5.62s).
 - Browser Runtime: Terminal active at `http://localhost:5173/`.
 
 ## Completed
@@ -51,12 +52,15 @@ Phase 9 — Sector-Aware Valuation Engine (Complete)
 - Phase 7: Forensic Accounting & Red Flag Engine (`ForensicAccountingEngine.ts`), 14 Forensic Investigation categories, Forensic Policy Registry (`ForensicPolicyRegistry.ts`), domain schemas (`ForensicAnalysisTypes.ts`), specialized cards (`ForensicRiskOverviewCard.tsx`, `HighPriorityFindingsCard.tsx`, `InvestigationQueueCard.tsx`, `PromoterAndOwnershipCard.tsx`, `RelatedPartiesAndContingentCard.tsx`, `AuditorAndAccountingCard.tsx`), cross-statement reconciliation modal (`CrossStatementAuditModal.tsx`), route (`ForensicInvestigationView.tsx`), and 10 dedicated unit test suites.
 - Phase 8: Management DNA, Concall & Execution Credibility Engine (`ManagementDnaEngine.ts`), 21 claim categories, 9 commitment statuses (`ABOVE_GUIDANCE`, `ACHIEVED`, `ON_TRACK`, `PARTIALLY_ACHIEVED`, `MISSED`, `REVISED`, `WITHDRAWN`, `UNVERIFIABLE`), outcome attribution (`MANAGEMENT_CONTROLLED`, `EXTERNAL_FACTOR`), separated management-stated vs verified reason models, CandidateManagementStatement validation, StatementCommitmentCertainty, language shift comparison, management-data tension cross-checks, minimum sample size gate (minimum 3 commitments or NOT_ASSESSABLE), multi-hop outcome provenance, stable pageId citations, 7-dimension behavioral discipline DNA profile, and 8 dedicated unit test suites (`managementGuidanceEvaluation.test.ts`, `promiseVsDeliveryScoring.test.ts`, `languageShiftAndCertainty.test.ts`, `managementDataTension.test.ts`, `managementReasonSeparation.test.ts`, `managementContradictionsAndRevisions.test.ts`, `managementAntiHallucination.test.ts`, `managementDnaUI.test.tsx`).
 - Phase 9: Sector-Aware Valuation Engine (`SectorValuationEngine.ts`), 16 valuation method specifications (`ValuationMethodRegistry.ts`), business model valuation policies (`ValuationPolicyRegistry.ts`), peer selection with IQR outlier filtering (`PeerSelectionEngine.ts`), point-in-time historical ranges (`HistoricalValuationDataService.ts`), 3-scenario FCFF DCF, 2D sensitivity matrix, reverse DCF bisection solver, SOTP/NAV/DDM, dynamic triangulation weights, multi-scenario margin of safety, and 9 dedicated unit test suites (`relativeValuationMultiples.test.ts`, `historicalValuationBands.test.ts`, `peerSelectionAndOutliers.test.ts`, `dcfScenariosAndWacc.test.ts`, `dcfSensitivityMatrix.test.ts`, `embeddedExpectationsReverseDcf.test.ts`, `businessModelValuationPolicy.test.ts`, `valuationDecouplingAndAntiHallucination.test.ts`, `sectorValuationUI.test.tsx`).
+- Phase 10: Technical Analysis & Price-Action Intelligence Engine (`TechnicalAnalysisEngine.ts`), 8 primary analytical pipelines (Trend & Structure, Moving Averages, Momentum, Volume, Volatility, Support/Resistance & Breakouts, Divergence, Relative Strength), 2 synthesis layers (Market Cycle Phase, Technical Risk Fragility), interactive SVG Price Chart with DMA overlays, screenshot visual observation mode, and 9 dedicated unit test suites (`ohlcvDataValidation.test.ts`, `technicalIndicators.test.ts`, `trendAndMarketStructure.test.ts`, `supportResistanceAndBreakouts.test.ts`, `volumeAndAccumulation.test.ts`, `divergenceDetection.test.ts`, `relativeStrengthAndVolatility.test.ts`, `screenshotModeAndAntiHallucination.test.ts`, `technicalAnalysisUI.test.tsx`).
 
 ## In Progress
 
-- Ready for Phase 10: Technical Structure & Market Dynamics (Moving Averages, Support & Resistance, Volume Profile, RSI, Delivery %, Relative Strength).
+- Ready for Phase 11: Real-Time News, Event Research & External Catalyst Engine.
 
 ## Next Action
+
+- Await user approval and prompt to initiate Phase 11.
 
 - Await user approval and prompt for Phase 10 execution. DO NOT start Phase 10 automatically.
 

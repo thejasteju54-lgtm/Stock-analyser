@@ -50,11 +50,15 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
     fireEvent.click(valNavButton);
     expect(screen.getByText(/Phase 9 — Sector-Aware Valuation Engine/i)).toBeInTheDocument();
 
-    // Test navigating to Phase 10 Technical Structure placeholder
+    // Test navigating to Phase 10 Technical Analysis module
     const techNavButton = screen.getByRole('button', { name: /Technical Structure/i });
     fireEvent.click(techNavButton);
-    expect(screen.getByText(/Technical Structure & Market Dynamics/i)).toBeInTheDocument();
-    expect(screen.getByText(/SCOPED TO PHASE 10/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phase 10 — Technical Analysis & Price-Action Intelligence/i)).toBeInTheDocument();
+
+    // Test navigating to Phase 11 News placeholder
+    const newsNavButton = screen.getByRole('button', { name: /News Intelligence/i });
+    fireEvent.click(newsNavButton);
+    expect(screen.getByText(/SCOPED TO PHASE 11/i)).toBeInTheDocument();
 
     // Click Return to Overview
     const backBtn = screen.getByRole('button', { name: /Return to Overview/i });
