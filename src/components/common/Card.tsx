@@ -2,6 +2,7 @@ import React from 'react';
 
 export interface CardProps {
   title?: string;
+  subtitle?: string;
   icon?: React.ReactNode;
   action?: React.ReactNode;
   children: React.ReactNode;
@@ -11,6 +12,7 @@ export interface CardProps {
 
 export const Card: React.FC<CardProps> = ({
   title,
+  subtitle,
   icon,
   action,
   children,
@@ -21,9 +23,16 @@ export const Card: React.FC<CardProps> = ({
     <div className={`terminal-card ${className}`} id={id}>
       {title && (
         <div className="terminal-card-header">
-          <div className="terminal-card-title">
-            {icon && <span className="card-icon">{icon}</span>}
-            <span>{title}</span>
+          <div>
+            <div className="terminal-card-title">
+              {icon && <span className="card-icon">{icon}</span>}
+              <span>{title}</span>
+            </div>
+            {subtitle && (
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                {subtitle}
+              </div>
+            )}
           </div>
           {action && <div className="card-action">{action}</div>}
         </div>

@@ -45,11 +45,16 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
     fireEvent.click(forensicNavButton);
     expect(screen.getByText(/Forensic Accounting & Earnings-Quality Investigation/i)).toBeInTheDocument();
 
-    // Test navigating to Phase 9 Valuation placeholder
+    // Test navigating to Phase 9 Sector Valuation module
     const valNavButton = screen.getByRole('button', { name: /Sector Valuation/i });
     fireEvent.click(valNavButton);
-    expect(screen.getByText(/Sector-Aware Valuation Models/i)).toBeInTheDocument();
-    expect(screen.getByText(/SCOPED TO PHASE 9/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phase 9 — Sector-Aware Valuation Engine/i)).toBeInTheDocument();
+
+    // Test navigating to Phase 10 Technical Structure placeholder
+    const techNavButton = screen.getByRole('button', { name: /Technical Structure/i });
+    fireEvent.click(techNavButton);
+    expect(screen.getByText(/Technical Structure & Market Dynamics/i)).toBeInTheDocument();
+    expect(screen.getByText(/SCOPED TO PHASE 10/i)).toBeInTheDocument();
 
     // Click Return to Overview
     const backBtn = screen.getByRole('button', { name: /Return to Overview/i });
