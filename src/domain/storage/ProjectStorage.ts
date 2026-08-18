@@ -361,6 +361,29 @@ export class ProjectStorage {
     return updatedProject;
   }
 
+  public static getManagementAnalysisForProject(projectId: string): any | undefined {
+    const project = this.getProject(projectId);
+    return project?.managementAnalysis;
+  }
+
+  public static saveManagementAnalysisForProject(
+    projectId: string,
+    managementAnalysis: any
+  ): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      managementAnalysis,
+      status: 'ANALYZED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
   private static saveAllProjects(projects: ResearchProject[]): void {
     if (!this.isBrowserEnvironment()) return;
     window.localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projects));

@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -107,9 +107,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 7,
-    dataQualityStatus: 'PENDING',
-    memoryState: 'Phase 7: Forensic Accounting & Red-Flag Engine Active (Deterministic, Provenance-Backed, Severity Gated)',
+    activePhase: 8,
+    dataQualityStatus: 'PASSED',
+    memoryState: 'Phase 8: Management DNA, Concall & Execution Credibility Engine Active (Deterministic, Promise vs Delivery, 7 Disciplines)',
   });
 
   // Re-sync active project if needed
@@ -194,6 +194,19 @@ export const App: React.FC = () => {
               onNavigateToFundamentals={() => {
                 handleRouteChange('fundamentals');
                 setFundamentalsViewMode('HEALTH');
+              }}
+            />
+          ) : activeRoute === 'management' ? (
+            <ManagementDnaView
+              currentProject={activeProject}
+              onNavigateToFundamentals={() => {
+                handleRouteChange('fundamentals');
+                setFundamentalsViewMode('HEALTH');
+              }}
+              onNavigateToForensics={() => handleRouteChange('forensic')}
+              onNavigateToCalculations={() => {
+                handleRouteChange('fundamentals');
+                setFundamentalsViewMode('CALCULATIONS');
               }}
             />
           ) : (

@@ -400,3 +400,4 @@ export { EvidenceExtractionView } from './EvidenceExtractionView';
 export { FinancialCalculationsView } from './FinancialCalculationsView';
 export { FundamentalHealthView } from './FundamentalHealthView';
 export { ForensicInvestigationView } from './ForensicInvestigationView';
+export { ManagementDnaView } from './ManagementDnaView';

@@ -8,6 +8,7 @@ import {
 import { CalculatedMetric } from '../calculations/CalculationTypes';
 import { FundamentalHealthAnalysis } from '../analysis/FundamentalHealthTypes';
 import { ForensicAnalysisReport } from '../forensics/ForensicAnalysisTypes';
+import { ManagementAnalysisReport } from '../management/ManagementDnaTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -36,6 +37,7 @@ export interface ResearchProject {
   calculatedMetrics?: CalculatedMetric[];
   fundamentalAnalysis?: FundamentalHealthAnalysis;
   forensicAnalysis?: ForensicAnalysisReport;
+  managementAnalysis?: ManagementAnalysisReport;
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;
