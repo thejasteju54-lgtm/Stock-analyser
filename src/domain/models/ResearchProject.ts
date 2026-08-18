@@ -11,6 +11,7 @@ import { ForensicAnalysisReport } from '../forensics/ForensicAnalysisTypes';
 import { ManagementAnalysisReport } from '../management/ManagementDnaTypes';
 import { SectorValuationReport } from '../valuation/ValuationTypes';
 import { TechnicalAnalysisReport } from '../technical/TechnicalTypes';
+import { NewsAndIndustryReport } from '../news/NewsAndIndustryTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -42,6 +43,7 @@ export interface ResearchProject {
   managementAnalysis?: ManagementAnalysisReport;
   valuationAnalysis?: SectorValuationReport;
   technicalAnalysis?: TechnicalAnalysisReport;
+  newsAndIndustryAnalysis?: NewsAndIndustryReport;
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;

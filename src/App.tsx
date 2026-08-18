@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -57,14 +57,14 @@ const ROUTE_DEFINITIONS: Record<
   },
   industry: {
     title: 'Industry Structure & Peer Moat Analysis',
-    phaseNumber: 'PHASE 8',
+    phaseNumber: 'PHASE 11',
     description: 'Industry growth, cyclicality, competitive dynamics, and peer benchmarking.',
     requiredEngine: 'IndustryAnalysisEngine (Sector Frameworks)',
   },
   news: {
     title: 'Sourced & Dated News Intelligence',
     phaseNumber: 'PHASE 11',
-    description: '27+ categorized corporate events, regulatory updates, capex plans, and rating actions.',
+    description: '33 categorized corporate events, regulatory updates, capex plans, and rating actions.',
     requiredEngine: 'NewsIntelligenceEngine (Provenance Stamped Feed)',
   },
   'catalysts-risks': {
@@ -107,9 +107,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 10,
+    activePhase: 11,
     dataQualityStatus: 'PASSED',
-    memoryState: 'Phase 10: Technical Analysis & Price-Action Intelligence Active (8 Primary Pipelines, 2 Synthesis Layers, Look-Ahead Free)',
+    memoryState: 'Phase 11: News Intelligence & Industry Analysis Active',
   });
 
   // Re-sync active project if needed
@@ -130,6 +130,10 @@ export const App: React.FC = () => {
 
   const handleProjectCreated = (newProject: ResearchProject) => {
     setActiveProject(newProject);
+  };
+
+  const handleProjectUpdate = (updatedProject: ResearchProject) => {
+    setActiveProject(updatedProject);
   };
 
   return (
@@ -227,6 +231,16 @@ export const App: React.FC = () => {
                 setFundamentalsViewMode('HEALTH');
               }}
               onNavigateToValuation={() => handleRouteChange('valuation')}
+            />
+          ) : activeRoute === 'news' ? (
+            <NewsIntelligenceView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'industry' ? (
+            <IndustryAnalysisView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
             />
           ) : (
             <PhasePlaceholderView

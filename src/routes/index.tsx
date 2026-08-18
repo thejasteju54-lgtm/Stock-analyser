@@ -403,3 +403,5 @@ export { ForensicInvestigationView } from './ForensicInvestigationView';
 export { ManagementDnaView } from './ManagementDnaView';
 export { SectorValuationView } from './SectorValuationView';
 export { TechnicalAnalysisView } from './TechnicalAnalysisView';
+export { NewsIntelligenceView } from './NewsIntelligenceView';
+export { IndustryAnalysisView } from './IndustryAnalysisView';

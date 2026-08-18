@@ -430,6 +430,29 @@ export class ProjectStorage {
     return updatedProject;
   }
 
+  public static getNewsAndIndustryAnalysisForProject(projectId: string): any | undefined {
+    const project = this.getProject(projectId);
+    return project?.newsAndIndustryAnalysis;
+  }
+
+  public static saveNewsAndIndustryAnalysisForProject(
+    projectId: string,
+    newsAndIndustryAnalysis: any
+  ): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      newsAndIndustryAnalysis,
+      status: 'ANALYZED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
   private static saveAllProjects(projects: ResearchProject[]): void {
     if (!this.isBrowserEnvironment()) return;
     window.localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projects));
