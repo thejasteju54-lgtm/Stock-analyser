@@ -405,3 +405,4 @@ export { SectorValuationView } from './SectorValuationView';
 export { TechnicalAnalysisView } from './TechnicalAnalysisView';
 export { NewsIntelligenceView } from './NewsIntelligenceView';
 export { IndustryAnalysisView } from './IndustryAnalysisView';
+export { CatalystAndRiskView } from './CatalystAndRiskView';

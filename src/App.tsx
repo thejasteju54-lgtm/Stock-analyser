@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView, CatalystAndRiskView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -107,9 +107,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 11,
+    activePhase: 12,
     dataQualityStatus: 'PASSED',
-    memoryState: 'Phase 11: News Intelligence & Industry Analysis Active',
+    memoryState: 'Phase 12: Catalysts & Multi-Dimensional Risk Matrix Active',
   });
 
   // Re-sync active project if needed
@@ -239,6 +239,11 @@ export const App: React.FC = () => {
             />
           ) : activeRoute === 'industry' ? (
             <IndustryAnalysisView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'catalysts-risks' ? (
+            <CatalystAndRiskView
               project={activeProject}
               onProjectUpdate={handleProjectUpdate}
             />

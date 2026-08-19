@@ -155,7 +155,7 @@ describe('Phase 11 — UI Components Integration Tests', () => {
     );
 
     expect(screen.getByText(/Source Provenance & Lineage Audit/i)).toBeDefined();
-    expect(screen.getByText((_, el) => el?.textContent?.includes('NSE Disclosures') ?? false)).toBeDefined();
+    expect(screen.getAllByText(/NSE Disclosures/i).length).toBeGreaterThanOrEqual(1);
 
     const closeBtn = screen.getByRole('button', { name: /Close Inspector/i });
     fireEvent.click(closeBtn);

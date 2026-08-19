@@ -60,10 +60,15 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
     fireEvent.click(newsNavButton);
     expect(screen.getByText(/News Intelligence & Real-Time Event Research/i)).toBeInTheDocument();
 
-    // Test navigating to Phase 12 placeholder
+    // Test navigating to Phase 12 Risks module
     const catNavButton = screen.getByRole('button', { name: /Catalysts & Risks/i });
     fireEvent.click(catNavButton);
-    expect(screen.getByText(/SCOPED TO PHASE 12/i)).toBeInTheDocument();
+    expect(screen.getByText(/Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix/i)).toBeInTheDocument();
+
+    // Test navigating to Phase 13 Scenarios placeholder
+    const scenNavButton = screen.getByRole('button', { name: /Scenario Modeling/i });
+    fireEvent.click(scenNavButton);
+    expect(screen.getByText(/SCOPED TO PHASE 13/i)).toBeInTheDocument();
 
     // Click Return to Overview
     const backBtn = screen.getByRole('button', { name: /Return to Overview/i });
