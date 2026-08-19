@@ -25,16 +25,18 @@ Phase 12 — Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (
   1. Pipeline A — Institutional Catalyst Extraction & Ranking (`CatalystExtractionEngine.ts`):
      - 12 discrete catalyst types (`EARNINGS_GROWTH`, `CAPACITY_EXPANSION`, `ORDER_BOOK_WIN`, `MARGIN_EXPANSION`, `DELEVERAGING`, `NEW_PRODUCT_LAUNCH`, etc.).
      - 5 forward time horizons (`IMMEDIATE_0_3M` to `STRUCTURAL`).
-     - Deterministic 1-10 impact scoring based on financial channels (`REVENUE`, `GROSS_MARGIN`, `EBITDA_MARGIN`, `WORKING_CAPITAL`, `CAPEX`, `CFO`, `DEBT`, etc.) and likelihood scoring (1-5).
+     - Exact 1–5 Catalyst Likelihood Scale (`evaluateCatalystLikelihood`): 5 (Confirmed milestone/contract/statutory approval), 4 (Guidance credibility >= 80%), 3 (Guidance credibility 60-79% / verified trend), 2 (Aspirational / low credibility < 60%), 1 (Conditional / missing data default).
+     - Deterministic 1-10 impact scoring based on financial channels (`REVENUE`, `GROSS_MARGIN`, `EBITDA_MARGIN`, `WORKING_CAPITAL`, `CAPEX`, `CFO`, `DEBT`, etc.).
      - Verified evidence vs management claim status tracking with provenance back to source layers.
   2. Pipeline B — Multi-Dimensional Risk Synthesis & 5x5 Matrix Geometry (`RiskSynthesisEngine.ts`):
      - 9 discrete risk categories (`SECTOR_COMPETITIVE`, `COMPANY_EXECUTION`, `BALANCE_SHEET_LEVERAGE`, `EARNINGS_QUALITY_FORENSIC`, `MANAGEMENT_GOVERNANCE`, `VALUATION_MULTIPLE_COMPRESSION`, `REGULATORY_LEGAL`, `MACRO_COMMODITY_CURRENCY`, `TECHNICAL_PRICE_STRUCTURE`).
-     - Deterministic 5x5 Probability (1-5) × Impact (1-5) matrix scoring (Raw Risk Score 1-25).
-     - Verified mitigation factor reduction (`MITIGATION_VERIFIED` [30-50%], `MITIGATION_PARTIAL` [10-25%], `MITIGATION_UNVERIFIED` [0%]) to calculate net post-mitigation risk scores.
+     - Exact 1–5 Risk Probability Scale (`evaluateRiskProbability`): 5 (Almost Certain / Active order / frequency >= 80%), 4 (High / frequency >= 50% / neg quarters >= 2), 3 (Moderate / frequency >= 25% / neg quarters = 1), 2 (Low / trigger proximity <= 30%), 1 (Remote default for missing/unverified data).
+     - Exact 1–5 Risk Impact Scale (`evaluateRiskImpact`): 5 (Catastrophic: PAT impact >= 50% or >= 50% Net Worth), 4 (Severe: PAT impact >= 20% or >= 20% Net Worth / rating downgrade), 3 (Moderate: PAT >= 10% or >= 10% Net Worth), 2 (Minor: PAT >= 3% or >= 3% Net Worth), 1 (Negligible default for missing financial exposure).
+     - Mitigation Stacking with Anti-Double-Counting (`evaluateStackedMitigations`): Deduplicates identical protections (taking max strength), compounds independent mitigations with multiplicative stacking, enforces strict 70% maximum reduction cap, and preserves full documentary lineage.
      - Multi-layer risk lineage tracking & deduplication (`SAME_UNDERLYING_RISK`, `RELATED_RISK`, `INDEPENDENT_RISK`) to prevent artificial risk inflation.
      - Decoupled cross-layer risk decomposition mapping across Fundamental, Forensic, Management, Valuation, Technical, and Industry sources.
   3. Pipeline C — Sector-Specific Falsifiable Thesis Breakers (`ThesisBreakerEngine.ts`):
-     - Falsifiable invalidation conditions across 8 operators (`LESS_THAN`, `GREATER_THAN`, `PERCENT_CHANGE_BY`, etc.) and 6 threshold types.
+     - Falsifiable invalidation conditions across exactly 7 verified mathematical operators (`GREATER_THAN`, `GREATER_THAN_OR_EQUAL`, `LESS_THAN`, `LESS_THAN_OR_EQUAL`, `EQUALS`, `CHANGE_BY`, `PERCENT_CHANGE_BY`) and 6 threshold types.
      - Automated baseline vs current threshold monitoring with 10% buffer margin warning (`APPROACHING_TRIGGER`).
      - Point-in-time data freshness gating (`CURRENT`, `STALE`, `EXPIRED`) with strict missing data gating (`NOT_ASSESSABLE`).
      - Actionable institutional verdict recommendation signals (`REVIEW_FOR_DOWNGRADE`, `ELEVATE_RISK_CONVICTION`, `NEUTRAL_MONITORING`).
@@ -45,8 +47,8 @@ Phase 12 — Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (
   - `CatalystAndRiskView.tsx` (`/catalysts-risks`), `RiskOverviewCard.tsx`, `MultiDimensionalRiskMatrixCard.tsx` (interactive 5x5 heatmap with cell/row selection), `PrioritizedCatalystCard.tsx`, `ThesisBreakersCard.tsx`, `CrossLayerRiskBreakdownCard.tsx` (layer tab selector), and `RiskDetailModal.tsx` (provenance, mitigations, lineage, and triggers inspector).
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
 - Lint: PASSED (0 errors via `npm.cmd run lint`).
-- Unit Tests: **313/313 PASSED** across **93 test suites** (10 dedicated Phase 12 suites + 83 previous suites).
-- Build: PASSED (`npm.cmd run build` transformed 1935 modules in 4.81s).
+- Unit Tests: **318/318 PASSED** across **93 test suites** (10 dedicated Phase 12 suites + 83 previous suites).
+- Build: PASSED (`npm.cmd run build` transformed 1935 modules in 3.33s).
 - Browser Runtime: Active and verified via browser subagent on `http://localhost:5173/`.
 
 ## Completed
@@ -63,7 +65,7 @@ Phase 12 — Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (
 - Phase 9: Sector-Aware Valuation Engine (`SectorValuationEngine.ts`), 16 valuation method specifications (`ValuationMethodRegistry.ts`), business model valuation policies (`ValuationPolicyRegistry.ts`), peer selection with IQR outlier filtering (`PeerSelectionEngine.ts`), 3-scenario FCFF DCF, 2D sensitivity matrix, reverse DCF bisection solver, SOTP/NAV/DDM, dynamic triangulation weights, and 9 dedicated unit test suites.
 - Phase 10: Technical Analysis & Price-Action Intelligence Engine (`TechnicalAnalysisEngine.ts`), 8 primary analytical pipelines, 2 synthesis layers (Market Cycle Phase, Technical Risk Fragility), interactive SVG Price Chart with DMA overlays, screenshot visual observation mode, and 9 dedicated unit test suites.
 - Phase 11: News Intelligence & Industry Analysis Engine (`NewsAndIndustryMasterEngine.ts`), Pipelines A & B, source hierarchy (Tier 1–4), deduplication & lineage, entity resolution, 33 event categories, deterministic materiality scoring, source conflict logging, catalyst/risk schedules, industry growth segregation (Historical vs Forecast), Porter 5-Forces, 5-stage value chains, peer comparison with period mismatch protection, 3-horizon outlook, non-mutating cross-layer sensitivity mapping, and 10 dedicated unit test suites.
-- Phase 12: Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (`CatalystRiskMasterEngine.ts`), 12 catalyst categories, impact-ranking, 9 risk categories, deterministic 5x5 Probability x Impact matrix, verified mitigation factor reductions, lineage deduplication, sector-specific falsifiable thesis breakers with buffer margin warnings and recommendation impact signals, catalyst-risk asymmetry scoring, cross-layer risk decomposition, and 10 dedicated unit test suites.
+- Phase 12: Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (`CatalystRiskMasterEngine.ts`), 12 catalyst categories, exact 1-5 likelihood scale, 9 risk categories, exact 1-5 probability & impact scales, net worth percentage exposure, verified mitigation stacking with anti-double-counting (70% cap), 7 mathematical thesis breaker operators, catalyst-risk asymmetry scoring, cross-layer risk decomposition, and 10 dedicated unit test suites.
 
 ## In Progress
 

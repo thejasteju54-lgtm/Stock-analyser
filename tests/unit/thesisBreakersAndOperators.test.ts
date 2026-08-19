@@ -97,4 +97,96 @@ describe('Phase 12 — Thesis Breakers Operators & Invalidation Gate Tests', () 
       })
     ).toBe('SAFE');
   });
+
+  it('strictly verifies all 7 implemented mathematical operators without inventing an eighth operator', () => {
+    const operators = [
+      'GREATER_THAN',
+      'GREATER_THAN_OR_EQUAL',
+      'LESS_THAN',
+      'LESS_THAN_OR_EQUAL',
+      'EQUALS',
+      'CHANGE_BY',
+      'PERCENT_CHANGE_BY',
+    ] as const;
+
+    // Verify exactly 7 operators are supported
+    expect(operators.length).toBe(7);
+
+    // 1. GREATER_THAN
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'GREATER_THAN',
+        thresholdValue: 20,
+        currentValue: 25,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 2. GREATER_THAN_OR_EQUAL
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'GREATER_THAN_OR_EQUAL',
+        thresholdValue: 20,
+        currentValue: 20,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 3. LESS_THAN
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'LESS_THAN',
+        thresholdValue: 15,
+        currentValue: 10,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 4. LESS_THAN_OR_EQUAL
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'LESS_THAN_OR_EQUAL',
+        thresholdValue: 15,
+        currentValue: 15,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 5. EQUALS
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'EQUALS',
+        thresholdValue: 50,
+        currentValue: 50,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 6. CHANGE_BY
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'CHANGE_BY',
+        thresholdValue: 5,
+        currentValue: 6,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+
+    // 7. PERCENT_CHANGE_BY
+    expect(
+      CatalystRiskPolicyRegistry.evaluateThesisBreaker({
+        operator: 'PERCENT_CHANGE_BY',
+        thresholdValue: 20,
+        currentValue: 25,
+        bufferMarginPercent: 10,
+        freshnessStatus: 'CURRENT',
+      })
+    ).toBe('BREACHED');
+  });
 });

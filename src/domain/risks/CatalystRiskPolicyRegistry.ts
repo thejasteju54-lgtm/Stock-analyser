@@ -15,6 +15,7 @@ import {
   RiskVelocity,
   NetRiskExposure,
   MitigationStatus,
+  MitigationAssessment,
   BreakerOperator,
   BreakerStatus,
   DataFreshnessStatus,
@@ -83,7 +84,69 @@ export class CatalystRiskPolicyRegistry {
   }
 
   /**
-   * Deterministic Risk Probability Score (1–5).
+   * Deterministic Catalyst Likelihood Evaluation (Exact 1–5 scale).
+   * 5 (CONFIRMED): Signed contract / audited commissioning / confirmed board resolution with exact date.
+   * 4 (HIGH): Formal management guidance with proven delivery track record >= 80% or active regulatory clearance.
+   * 3 (MEDIUM): Ongoing capacity expansion or guidance with moderate track record (60–79%) or structural industry trend.
+   * 2 (LOW): Early-stage aspirational announcement, uncorroborated report, or credibility < 60%.
+   * 1 (CONDITIONAL): Missing data, unverified claim without citations, or conditional upon unknown external approval.
+   */
+  public static evaluateCatalystLikelihood(params: {
+    verificationStatus?: CatalystVerificationStatus;
+    hasExecutedContract?: boolean;
+    hasStatutoryApproval?: boolean;
+    managementCredibilityScore?: number;
+    hasSpecificMilestoneDate?: boolean;
+    isAspirationalOnly?: boolean;
+    confidence?: number;
+  }): { likelihood: CatalystLikelihood; score: number; isAssessable: boolean } {
+    if (
+      params.verificationStatus === 'NOT_ASSESSABLE' ||
+      (params.confidence !== undefined && params.confidence <= 0)
+    ) {
+      return { likelihood: 'CONDITIONAL', score: 1, isAssessable: false };
+    }
+
+    if (
+      (params.hasExecutedContract && params.hasSpecificMilestoneDate) ||
+      params.hasStatutoryApproval
+    ) {
+      return { likelihood: 'HIGH', score: 5, isAssessable: true };
+    }
+
+    if (
+      (params.managementCredibilityScore !== undefined && params.managementCredibilityScore >= 80) ||
+      params.hasExecutedContract
+    ) {
+      return { likelihood: 'HIGH', score: 4, isAssessable: true };
+    }
+
+    if (
+      (params.managementCredibilityScore !== undefined && params.managementCredibilityScore >= 60) ||
+      params.verificationStatus === 'VERIFIED_EVIDENCE'
+    ) {
+      return { likelihood: 'MEDIUM', score: 3, isAssessable: true };
+    }
+
+    if (
+      params.isAspirationalOnly ||
+      (params.managementCredibilityScore !== undefined && params.managementCredibilityScore < 60) ||
+      params.verificationStatus === 'MANAGEMENT_CLAIM'
+    ) {
+      return { likelihood: 'LOW', score: 2, isAssessable: true };
+    }
+
+    // Default missing / unverified data behavior
+    return { likelihood: 'CONDITIONAL', score: 1, isAssessable: false };
+  }
+
+  /**
+   * Deterministic Risk Probability Score (Exact 1–5 scale).
+   * 5: ALMOST_CERTAIN (Active regulatory order / litigation judgement, historical frequency >= 80%, or trigger proximity <= 0% [already breached/imminent]).
+   * 4: HIGH (Historical frequency >= 50%, consecutive negative quarters >= 2, or trigger proximity <= 5%).
+   * 3: MODERATE (Historical frequency >= 25%, consecutive negative quarters === 1, or trigger proximity <= 15%).
+   * 2: LOW (Trigger proximity <= 30%, or external news corroborated).
+   * 1: REMOTE (Default when no active adverse indicators exist or data is unverified/missing).
    */
   public static evaluateRiskProbability(params: {
     historicalFrequency?: number; // 0.0 - 1.0
@@ -123,47 +186,62 @@ export class CatalystRiskPolicyRegistry {
       return { probability: 'LOW', score: 2 };
     }
 
+    // Missing-data / baseline behavior: Never manufacture risk without evidence
     return { probability: 'REMOTE', score: 1 };
   }
 
   /**
-   * Deterministic Risk Impact Score (1–5).
+   * Deterministic Risk Impact Score (Exact 1–5 scale).
+   * 5: CATASTROPHIC (Threatens business continuity / solvency, PAT impact >= 50%, or exposure >= 50% Net Worth).
+   * 4: SEVERE (Credit rating downgrade, PAT impact >= 20%, exposure >= 20% Net Worth, or margin compression >= 300 bps).
+   * 3: MODERATE (PAT impact >= 10%, exposure >= 10% Net Worth, or margin compression >= 100 bps).
+   * 2: MINOR (PAT impact >= 3%, exposure >= 3% Net Worth, or margin compression >= 30 bps).
+   * 1: NEGLIGIBLE (PAT impact < 3%, margin compression < 30 bps, or unquantified/missing financial exposure).
    */
   public static evaluateRiskImpact(params: {
     potentialPatImpactPercent?: number;
+    exposureAsPercentOfNetWorth?: number;
     threatensBusinessContinuity?: boolean;
     potentialCreditDowngrade?: boolean;
     potentialMarginCompressionBps?: number;
   }): { impact: RiskImpact; score: number } {
+    const netWorthExp = params.exposureAsPercentOfNetWorth;
+    const patExp = params.potentialPatImpactPercent;
+
     if (
       params.threatensBusinessContinuity ||
-      (params.potentialPatImpactPercent !== undefined && params.potentialPatImpactPercent >= 50)
+      (patExp !== undefined && patExp >= 50) ||
+      (netWorthExp !== undefined && netWorthExp >= 50)
     ) {
       return { impact: 'CATASTROPHIC', score: 5 };
     }
 
     if (
       params.potentialCreditDowngrade ||
-      (params.potentialPatImpactPercent !== undefined && params.potentialPatImpactPercent >= 20) ||
+      (patExp !== undefined && patExp >= 20) ||
+      (netWorthExp !== undefined && netWorthExp >= 20) ||
       (params.potentialMarginCompressionBps !== undefined && params.potentialMarginCompressionBps >= 300)
     ) {
       return { impact: 'SEVERE', score: 4 };
     }
 
     if (
-      (params.potentialPatImpactPercent !== undefined && params.potentialPatImpactPercent >= 10) ||
+      (patExp !== undefined && patExp >= 10) ||
+      (netWorthExp !== undefined && netWorthExp >= 10) ||
       (params.potentialMarginCompressionBps !== undefined && params.potentialMarginCompressionBps >= 100)
     ) {
       return { impact: 'MODERATE', score: 3 };
     }
 
     if (
-      (params.potentialPatImpactPercent !== undefined && params.potentialPatImpactPercent >= 3) ||
+      (patExp !== undefined && patExp >= 3) ||
+      (netWorthExp !== undefined && netWorthExp >= 3) ||
       (params.potentialMarginCompressionBps !== undefined && params.potentialMarginCompressionBps >= 30)
     ) {
       return { impact: 'MINOR', score: 2 };
     }
 
+    // Missing-data / baseline behavior: Never manufacture financial losses without evidence
     return { impact: 'NEGLIGIBLE', score: 1 };
   }
 
@@ -175,6 +253,86 @@ export class CatalystRiskPolicyRegistry {
     if (netScore >= 12) return 'HIGH';
     if (netScore >= 6) return 'MEDIUM';
     return 'LOW';
+  }
+
+  /**
+   * Evaluates Stacked Mitigations with anti-double-counting protection and evidence preservation.
+   * Anti-double-counting rules:
+   * 1. Mitigations sharing the same description/evidence or underlying protection mechanism are deduplicated (taking max strength).
+   * 2. Multiple distinct independent mitigations stack via compounding multiplicative factors:
+   *    (1 - combinedFactor) = (1 - factor_1) * (1 - factor_2) * ...
+   * 3. Combined mitigation factor is capped at 0.70 (70% max risk reduction), preventing risk from being zeroed out.
+   */
+  public static evaluateStackedMitigations(
+    probabilityScore: number,
+    impactScore: number,
+    mitigations: MitigationAssessment[]
+  ): {
+    rawRiskScore: number;
+    netRiskScore: number;
+    severity: RiskSeverity;
+    netExposure: NetRiskExposure;
+    effectiveMitigationFactor: number;
+    deduplicatedMitigations: MitigationAssessment[];
+  } {
+    const rawRiskScore = probabilityScore * impactScore; // 1-25
+
+    if (!mitigations || mitigations.length === 0) {
+      return {
+        rawRiskScore,
+        netRiskScore: rawRiskScore,
+        severity: this.getSeverityFromNetScore(rawRiskScore),
+        netExposure: 'UNMITIGATED',
+        effectiveMitigationFactor: 0,
+        deduplicatedMitigations: [],
+      };
+    }
+
+    // 1. Deduplicate by unique protection key (description or primary evidence ref) to prevent double counting
+    const protectionMap = new Map<string, MitigationAssessment>();
+    for (const mit of mitigations) {
+      const key = (mit.description.trim().toLowerCase().slice(0, 40) + '_' + (mit.evidenceReferences[0] || '')).toLowerCase();
+      const existing = protectionMap.get(key);
+      if (!existing || mit.mitigationStrength > existing.mitigationStrength) {
+        protectionMap.set(key, mit);
+      }
+    }
+
+    const deduplicatedMitigations = Array.from(protectionMap.values());
+
+    // 2. Multiplicative stacking across distinct protections with diminishing returns
+    let unmitigatedMultiplier = 1.0;
+    for (const mit of deduplicatedMitigations) {
+      let singleFactor = 0.0;
+      if (mit.status === 'MITIGATION_VERIFIED') {
+        singleFactor = Math.max(0.1, Math.min(0.5, mit.mitigationStrength));
+      } else if (mit.status === 'MITIGATION_PARTIAL') {
+        singleFactor = Math.max(0.05, Math.min(0.25, mit.mitigationStrength * 0.5));
+      }
+      unmitigatedMultiplier *= (1.0 - singleFactor);
+    }
+
+    // 3. Cap combined reduction at 70% max
+    const effectiveMitigationFactor = Math.min(0.70, Number((1.0 - unmitigatedMultiplier).toFixed(4)));
+
+    const netRiskScore = Math.max(1, Math.min(25, Math.round(rawRiskScore * (1.0 - effectiveMitigationFactor))));
+    const severity = this.getSeverityFromNetScore(netRiskScore);
+
+    let netExposure: NetRiskExposure = 'UNMITIGATED';
+    if (effectiveMitigationFactor >= 0.40) {
+      netExposure = 'SUBSTANTIALLY_MITIGATED';
+    } else if (effectiveMitigationFactor > 0) {
+      netExposure = 'PARTIALLY_MITIGATED';
+    }
+
+    return {
+      rawRiskScore,
+      netRiskScore,
+      severity,
+      netExposure,
+      effectiveMitigationFactor,
+      deduplicatedMitigations,
+    };
   }
 
   /**
@@ -191,30 +349,20 @@ export class CatalystRiskPolicyRegistry {
     severity: RiskSeverity;
     netExposure: NetRiskExposure;
   } {
-    const rawRiskScore = probabilityScore * impactScore; // 1-25
-
-    let effectiveMitigationFactor = 0.0;
-    if (mitigationStatus === 'MITIGATION_VERIFIED') {
-      effectiveMitigationFactor = Math.max(0.1, Math.min(0.7, mitigationStrength));
-    } else if (mitigationStatus === 'MITIGATION_PARTIAL') {
-      effectiveMitigationFactor = Math.max(0.05, Math.min(0.3, mitigationStrength * 0.5));
-    }
-
-    const netRiskScore = Math.max(1, Math.min(25, Math.round(rawRiskScore * (1.0 - effectiveMitigationFactor))));
-    const severity = this.getSeverityFromNetScore(netRiskScore);
-
-    let netExposure: NetRiskExposure = 'UNMITIGATED';
-    if (effectiveMitigationFactor >= 0.4) {
-      netExposure = 'SUBSTANTIALLY_MITIGATED';
-    } else if (effectiveMitigationFactor > 0) {
-      netExposure = 'PARTIALLY_MITIGATED';
-    }
-
+    const singleMit: MitigationAssessment = {
+      mitigationId: 'mit_single',
+      description: 'Single mitigation entry',
+      status: mitigationStatus,
+      mitigationStrength,
+      evidenceReferences: [],
+      confidence: 80,
+    };
+    const res = this.evaluateStackedMitigations(probabilityScore, impactScore, [singleMit]);
     return {
-      rawRiskScore,
-      netRiskScore,
-      severity,
-      netExposure,
+      rawRiskScore: res.rawRiskScore,
+      netRiskScore: res.netRiskScore,
+      severity: res.severity,
+      netExposure: res.netExposure,
     };
   }
 
