@@ -1,10 +1,11 @@
-/**
- * ResearchWorkspaceView.tsx
- * Phase 15 — Production Research Workflow, Evidence Refresh & Report Delivery View.
- */
-
 import React, { useState } from 'react';
 import { ResearchProject } from '../domain/models/ResearchProject';
+import { EvidenceCompletenessEngine } from '../domain/readiness/EvidenceCompletenessEngine';
+import { ResearchFreshnessEngine } from '../domain/freshness/ResearchFreshnessEngine';
+import { InvestmentResearchReportEngine } from '../domain/reports/InvestmentResearchReportEngine';
+import { ResearchChangeDetectionEngine } from '../domain/snapshots/ResearchChangeDetectionEngine';
+import { ResearchPipelineOrchestrator, PipelineExecutionReport } from '../domain/orchestration/ResearchPipelineOrchestrator';
+import { LiveResearchRefreshOrchestrator } from '../domain/dataSources/LiveResearchRefreshOrchestrator';
 import { WorkflowStatusStepper } from '../components/workflow/WorkflowStatusStepper';
 import { DocumentRegistryTable } from '../components/workflow/DocumentRegistryTable';
 import { EvidenceCompletenessGrid } from '../components/workflow/EvidenceCompletenessGrid';
@@ -12,95 +13,118 @@ import { PipelineExecutionPanel } from '../components/workflow/PipelineExecution
 import { FreshnessAndRefreshQueueCard } from '../components/workflow/FreshnessAndRefreshQueueCard';
 import { InvestmentReportViewer } from '../components/workflow/InvestmentReportViewer';
 import { SnapshotComparisonModal } from '../components/workflow/SnapshotComparisonModal';
-import { EvidenceCompletenessEngine } from '../domain/readiness/EvidenceCompletenessEngine';
-import { ResearchFreshnessEngine } from '../domain/freshness/ResearchFreshnessEngine';
-import { ResearchPipelineOrchestrator, PipelineExecutionReport } from '../domain/orchestration/ResearchPipelineOrchestrator';
-import { ResearchSnapshotEngine } from '../domain/snapshots/ResearchSnapshotEngine';
-import { ResearchChangeDetectionEngine } from '../domain/snapshots/ResearchChangeDetectionEngine';
-import { InvestmentResearchReportEngine } from '../domain/reports/InvestmentResearchReportEngine';
-import { ProjectStorage } from '../domain/storage/ProjectStorage';
-import { SnapshotComparisonReport } from '../domain/snapshots/SnapshotTypes';
+import { LiveResearchControlPanel } from '../components/live/LiveResearchControlPanel';
+import { LiveDataStatusPanel } from '../components/live/LiveDataStatusPanel';
 import { Briefcase, History } from 'lucide-react';
 
 interface ResearchWorkspaceViewProps {
   project: ResearchProject;
   onProjectUpdate?: (updatedProject: ResearchProject) => void;
+  onRefreshProject?: () => void;
 }
 
 export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
   project,
   onProjectUpdate,
+  onRefreshProject,
 }) => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isReplayMode, setIsReplayMode] = useState(project.isReplayMode || false);
+  const [cutoffDate, setCutoffDate] = useState<string | undefined>(project.replayCutoffDate);
   const [executionReport, setExecutionReport] = useState<PipelineExecutionReport | undefined>(undefined);
-  const [comparisonReport, setComparisonReport] = useState<SnapshotComparisonReport | null>(null);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(null);
+  const [compareSnapshotId, setCompareSnapshotId] = useState<string | null>(null);
 
+  // 1. Calculate 11-pillar evidence completeness
   const completenessReport = EvidenceCompletenessEngine.evaluateProjectCompleteness(project);
+
+  // 2. Calculate Freshness Report
   const freshnessReport = ResearchFreshnessEngine.assessProjectFreshness(project);
-  const reportPayload = project.reportPayload || InvestmentResearchReportEngine.generateReport(project, project.snapshots?.[0]?.snapshotId);
 
-  const handleRunFullPipeline = () => {
+  // 3. Generate Latest 22-Section Report
+  const latestSnapshotId = project.snapshots && project.snapshots.length > 0
+    ? project.snapshots[project.snapshots.length - 1].snapshotId
+    : `snap_temp_${Date.now()}`;
+  const investmentReport = InvestmentResearchReportEngine.generateReport(project, latestSnapshotId);
+
+  // 4. Trigger Full or Incremental Analytical Pipeline Execution
+  const handleExecutePipeline = (invalidatedPhases?: any[]) => {
     setIsRunning(true);
     setTimeout(() => {
-      const rep = ResearchPipelineOrchestrator.executePipeline(project);
-      setExecutionReport(rep);
-      
-      // Auto-create snapshot and report
-      const snap = ResearchSnapshotEngine.createSnapshot(project, undefined, 'Workflow Pipeline Execution');
-      ProjectStorage.addSnapshotToProject(project.id, snap);
-      
-      const repPayload = InvestmentResearchReportEngine.generateReport(project, snap.snapshotId);
-      ProjectStorage.saveReportPayloadForProject(project.id, repPayload);
-
-      setIsRunning(false);
-      if (onProjectUpdate) {
-        onProjectUpdate({ ...project });
+      try {
+        const report = ResearchPipelineOrchestrator.executePipeline(project, invalidatedPhases);
+        setExecutionReport(report);
+        if (onProjectUpdate) {
+          onProjectUpdate({ ...project });
+        }
+        if (onRefreshProject) {
+          onRefreshProject();
+        }
+      } catch (err) {
+        console.error('Pipeline execution error:', err);
+      } finally {
+        setIsRunning(false);
       }
-    }, 300);
+    }, 100);
   };
 
-  const handleRunIncrementalPipeline = () => {
-    setIsRunning(true);
+  // 5. Handle Live / Replay Feed Refresh
+  const handleLiveFeedsRefresh = () => {
+    setIsRefreshing(true);
     setTimeout(() => {
-      const rep = ResearchPipelineOrchestrator.executePipeline(project, ['PHASE_10_TECHNICAL', 'PHASE_14_VERDICT', 'PHASE_15_REPORT']);
-      setExecutionReport(rep);
-      setIsRunning(false);
-    }, 200);
+      try {
+        const refreshResult = LiveResearchRefreshOrchestrator.processLiveUpdate(
+          project,
+          'MARKET_PRICE_TICK',
+          ['rawPrice', 'splitAdjustedPrice', 'totalReturnPrice'],
+          cutoffDate
+        );
+        setExecutionReport(refreshResult.executionReport);
+        if (onProjectUpdate) {
+          onProjectUpdate({ ...project });
+        }
+        if (onRefreshProject) {
+          onRefreshProject();
+        }
+      } catch (err) {
+        console.error('Live feed refresh error:', err);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }, 150);
   };
 
-  const handleRefreshCategory = (_category: string) => {
-    handleRunIncrementalPipeline();
-  };
-
+  // 6. Handle Snapshot Comparison Modal Trigger
   const handleCompareWithPreviousSnapshot = () => {
     const snapshots = project.snapshots || [];
     if (snapshots.length >= 2) {
-      const diff = ResearchChangeDetectionEngine.compareSnapshots(
-        snapshots[snapshots.length - 2],
-        snapshots[snapshots.length - 1]
-      );
-      setComparisonReport(diff);
-    } else {
-      // Mock earlier snapshot comparison for demonstration
-      const dummyPrior = ResearchSnapshotEngine.createSnapshot(project);
-      dummyPrior.snapshotId = 'snap_prior_demo';
-      dummyPrior.marketPrice = (dummyPrior.marketPrice || 1000) * 0.92;
-      dummyPrior.decision = 'BUY';
-      dummyPrior.convictionScore = 8.5;
-      const diff = ResearchChangeDetectionEngine.compareSnapshots(dummyPrior, dummyPrior);
-      setComparisonReport(diff);
+      setSelectedSnapshotId(snapshots[snapshots.length - 1].snapshotId);
+      setCompareSnapshotId(snapshots[snapshots.length - 2].snapshotId);
+      setShowCompareModal(true);
+    } else if (snapshots.length === 1) {
+      setSelectedSnapshotId(snapshots[0].snapshotId);
+      setCompareSnapshotId(snapshots[0].snapshotId);
+      setShowCompareModal(true);
     }
   };
+
+  const snapshotA = project.snapshots?.find((s) => s.snapshotId === selectedSnapshotId);
+  const snapshotB = project.snapshots?.find((s) => s.snapshotId === compareSnapshotId) || snapshotA;
+  const comparisonReport = snapshotA && snapshotB
+    ? ResearchChangeDetectionEngine.compareSnapshots(snapshotA, snapshotB)
+    : null;
 
   return (
     <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px 20px', color: '#f8fafc' }}>
       {/* Workspace Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Briefcase size={20} color="#38bdf8" />
             <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Phase 15 — Production Research Workspace & Report Delivery
+              Phase 15/16 — Production Research Workspace & Live Reliability Engine
             </h1>
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
@@ -131,6 +155,22 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
         </div>
       </div>
 
+      {/* Phase 16 Live Research Control Bar */}
+      <LiveResearchControlPanel
+        symbol={project.company.symbol}
+        isReplayMode={isReplayMode}
+        cutoffDate={cutoffDate}
+        onToggleMode={(mode) => setIsReplayMode(mode)}
+        onCutoffChange={(newDate) => setCutoffDate(newDate)}
+        onRefreshData={handleLiveFeedsRefresh}
+        isRefreshing={isRefreshing}
+      />
+
+      {/* Phase 16 Live Feed Health & Connectivity Status */}
+      <div style={{ marginBottom: '16px' }}>
+        <LiveDataStatusPanel />
+      </div>
+
       {/* 1. Workflow Lifecycle Stepper */}
       <WorkflowStatusStepper currentState={project.workflowState || 'DECISION_READY'} />
 
@@ -144,24 +184,24 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
       <PipelineExecutionPanel
         executionReport={executionReport}
         isRunning={isRunning}
-        onRunFullPipeline={handleRunFullPipeline}
-        onRunIncrementalPipeline={handleRunIncrementalPipeline}
+        onRunFullPipeline={() => handleExecutePipeline()}
+        onRunIncrementalPipeline={() => handleExecutePipeline()}
       />
 
-      {/* 5. Freshness & Priority Refresh Queue */}
+      {/* 5. Evidence Freshness & Priority Refresh Queue */}
       <FreshnessAndRefreshQueueCard
         freshnessReport={freshnessReport}
-        onRefreshCategory={handleRefreshCategory}
+        onRefreshCategory={() => handleLiveFeedsRefresh()}
       />
 
-      {/* 6. 22-Section Canonical Investment Report Viewer & Exporter */}
-      <InvestmentReportViewer report={reportPayload} />
+      {/* 6. Canonical 22-Section Institutional Report Delivery */}
+      <InvestmentReportViewer report={investmentReport} />
 
-      {/* Snapshot Comparison Modal */}
-      {comparisonReport && (
+      {/* 7. Snapshot Delta Comparison Modal */}
+      {showCompareModal && comparisonReport && (
         <SnapshotComparisonModal
           comparisonReport={comparisonReport}
-          onClose={() => setComparisonReport(null)}
+          onClose={() => setShowCompareModal(false)}
         />
       )}
     </div>

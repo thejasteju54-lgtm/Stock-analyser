@@ -61,11 +61,11 @@ export const OverviewView: React.FC<RouteViewProps> = ({
               Indian Equity Research Intelligence Terminal
             </h1>
             <Badge variant="cyan" icon={<ShieldCheck size={11} />}>
-              Phase 2 Active
+              Phase 16 Active
             </Badge>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', maxWidth: '780px' }}>
-            Institutional-grade fundamental analysis, forensic accounting, management DNA evaluation, sector-specific valuation, and technical analysis engine designed for Indian listed equities.
+            Institutional-grade fundamental analysis, forensic accounting, management DNA evaluation, sector-specific valuation, live data integration, and technical analysis engine designed for Indian listed equities.
           </p>
         </div>
 
@@ -76,14 +76,14 @@ export const OverviewView: React.FC<RouteViewProps> = ({
             onClick={onOpenNewProjectModal}
             id="overview-new-project-btn"
           >
-            New Company (P2)
+            New Company
           </Button>
           <Button
             variant="primary"
             icon={<ArrowRight size={13} />}
-            onClick={() => onNavigate('ingestion')}
+            onClick={() => onNavigate('evidence')}
           >
-            Start Ingestion (P3)
+            Open Workspace (P15/16)
           </Button>
         </div>
       </div>
@@ -190,8 +190,8 @@ export const OverviewView: React.FC<RouteViewProps> = ({
               <span style={{ fontFamily: 'var(--font-mono)', color: '#10b981' }}>100% Deterministic (Pure TS)</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Data Quality Gate:</span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8' }}>Mandatory Phase 13.5 Gating</span>
+              <span style={{ color: 'var(--text-secondary)' }}>Live Data Integration:</span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8' }}>SHA-256 Verified Feed Ingestion</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Anti-Hallucination Policy:</span>
@@ -248,28 +248,28 @@ export const OverviewView: React.FC<RouteViewProps> = ({
           </div>
         </Card>
 
-        {/* 20-Phase Engine Roadmap Progress */}
+        {/* Engine Pipeline Status */}
         <Card
           title="Engine Pipeline Status"
           icon={<Activity size={14} color="#10b981" />}
-          action={<Badge variant="neutral">PHASE 2 / 20</Badge>}
+          action={<Badge variant="bullish">PHASE 16 LIVE</Badge>}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
-              <span>[✓] P00: REPOSITORY INTELLIGENCE</span>
-              <span>COMPLETE</span>
+              <span>[✓] P14: INVESTMENT DECISION ENGINE</span>
+              <span>FINAL VERDICT</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
-              <span>[✓] P01: APPLICATION SHELL & TOKENS</span>
-              <span>COMPLETE</span>
+              <span>[✓] P15: WORKFLOW & 22-SEC REPORT</span>
+              <span>DELIVERY</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#38bdf8', fontWeight: 600 }}>
-              <span>[●] P02: RESEARCH ONBOARDING & TAXONOMY</span>
-              <span>ACTIVE</span>
+              <span>[●] P16: LIVE DATA & VALIDATION</span>
+              <span>PRODUCTION</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-              <span>[ ] P03: MULTI-STAGE INGESTION & OCR</span>
-              <span>NEXT</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+              <span>[✓] REAL-COMPANY INVARIANT GATES</span>
+              <span>5 ARCHETYPES</span>
             </div>
           </div>
         </Card>
@@ -277,25 +277,26 @@ export const OverviewView: React.FC<RouteViewProps> = ({
 
       {/* Modules Quick Navigation Matrix */}
       <Card
-        title="Research Intelligence Modules (15 Engines)"
+        title="Research Intelligence Modules (16 Engines)"
         icon={<Layers size={14} color="#6366f1" />}
       >
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
           {[
-            { route: 'ingestion' as TerminalRoute, name: '1. Document Ingestion', phase: 'P3', status: 'Pending P3' },
-            { route: 'extraction' as TerminalRoute, name: '2. Extraction Review', phase: 'P4', status: 'Pending P4' },
-            { route: 'fundamentals' as TerminalRoute, name: '3. Fundamental Health', phase: 'P6', status: 'Pending P6' },
-            { route: 'forensic' as TerminalRoute, name: '4. Forensic Accounting', phase: 'P7', status: 'Pending P7' },
-            { route: 'management' as TerminalRoute, name: '5. Management DNA', phase: 'P8', status: 'Pending P8' },
-            { route: 'valuation' as TerminalRoute, name: '6. Sector Valuation', phase: 'P9', status: 'Pending P9' },
-            { route: 'technical' as TerminalRoute, name: '7. Technical Structure', phase: 'P10', status: 'Pending P10' },
-            { route: 'industry' as TerminalRoute, name: '8. Industry Moat', phase: 'P8', status: 'Pending P8' },
-            { route: 'news' as TerminalRoute, name: '9. News Intelligence', phase: 'P11', status: 'Pending P11' },
-            { route: 'catalysts-risks' as TerminalRoute, name: '10. Catalysts & Risks', phase: 'P12', status: 'Pending P12' },
-            { route: 'scenarios' as TerminalRoute, name: '11. Scenario Modeling', phase: 'P13', status: 'Pending P13' },
-            { route: 'quality-gate' as TerminalRoute, name: '12. Data Quality Gate', phase: 'P13.5', status: 'Pending P13.5' },
-            { route: 'verdict' as TerminalRoute, name: '13. Investment Verdict', phase: 'P14', status: 'Pending P14' },
-            { route: 'evidence' as TerminalRoute, name: '14. Evidence Explorer', phase: 'P15', status: 'Pending P15' },
+            { route: 'ingestion' as TerminalRoute, name: '1. Document Ingestion', phase: 'P3', status: 'Active' },
+            { route: 'extraction' as TerminalRoute, name: '2. Extraction Review', phase: 'P4', status: 'Active' },
+            { route: 'fundamentals' as TerminalRoute, name: '3. Fundamental Health', phase: 'P6', status: 'Active' },
+            { route: 'forensic' as TerminalRoute, name: '4. Forensic Accounting', phase: 'P7', status: 'Active' },
+            { route: 'management' as TerminalRoute, name: '5. Management DNA', phase: 'P8', status: 'Active' },
+            { route: 'valuation' as TerminalRoute, name: '6. Sector Valuation', phase: 'P9', status: 'Active' },
+            { route: 'technical' as TerminalRoute, name: '7. Technical Structure', phase: 'P10', status: 'Active' },
+            { route: 'industry' as TerminalRoute, name: '8. Industry Moat', phase: 'P11', status: 'Active' },
+            { route: 'news' as TerminalRoute, name: '9. News Intelligence', phase: 'P11', status: 'Active' },
+            { route: 'catalysts-risks' as TerminalRoute, name: '10. Catalysts & Risks', phase: 'P12', status: 'Active' },
+            { route: 'scenarios' as TerminalRoute, name: '11. Scenario Modeling', phase: 'P13', status: 'Active' },
+            { route: 'quality-gate' as TerminalRoute, name: '12. Data Quality Gate', phase: 'P13.5', status: 'Active' },
+            { route: 'verdict' as TerminalRoute, name: '13. Investment Verdict', phase: 'P14', status: 'Active' },
+            { route: 'evidence' as TerminalRoute, name: '14. Evidence & Workspace', phase: 'P15/16', status: 'Live Engine' },
+            { route: 'history' as TerminalRoute, name: '15. Snapshot History', phase: 'P15', status: 'Active' },
           ].map((mod) => (
             <div
               key={mod.route}
@@ -410,3 +411,4 @@ export { ScenarioModelingView } from './ScenarioModelingView';
 export { InvestmentVerdictView } from './InvestmentVerdictView';
 export { ResearchWorkspaceView } from './ResearchWorkspaceView';
 export { ResearchHistoryView } from './ResearchHistoryView';
+export { DataSourceConfigurationView } from '../components/live/DataSourceConfigurationView';

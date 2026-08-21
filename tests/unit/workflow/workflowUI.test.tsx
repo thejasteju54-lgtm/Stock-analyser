@@ -27,7 +27,7 @@ describe('Phase 15 — Research Workspace & History UI Views', () => {
 
     render(<ResearchWorkspaceView project={project} />);
 
-    expect(screen.getByText(/Phase 15 — Production Research Workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Production Research Workspace/i)).toBeInTheDocument();
     expect(screen.getByText(/Workflow Lifecycle State/i)).toBeInTheDocument();
     expect(screen.getByText(/Document Registry & Version Ledger/i)).toBeInTheDocument();
     expect(screen.getByText(/11-Pillar Evidence Completeness/i)).toBeInTheDocument();
@@ -58,11 +58,18 @@ describe('Phase 15 — Research Workspace & History UI Views', () => {
         decision: 'BUY',
         convictionScore: 8.5,
         convictionBand: 'VERY_HIGH',
-        marketPrice: 920,
+        marketPrice: 980.5,
         marketPriceStatus: 'CURRENT',
-        intrinsicBaseValue: 1150,
-        marginOfSafetyPercent: 20.0,
-        scenarioSummary: { bearValuation: 750, baseValuation: 1150, bullValuation: 1450, expectedScenarioValue: 1120, areProbabilitiesPlaceholders: false, probabilityStatus: 'ASSESSABLE' },
+        intrinsicBaseValue: 1150.0,
+        marginOfSafetyPercent: 17.3,
+        scenarioSummary: {
+          bearValuation: 750,
+          baseValuation: 1150,
+          bullValuation: 1400,
+          expectedScenarioValue: 1120,
+          areProbabilitiesPlaceholders: false,
+          probabilityStatus: 'ESTIMATED',
+        },
         hash: 'a'.repeat(64),
         inputHash: 'b'.repeat(64),
         outputHash: 'c'.repeat(64),
@@ -72,6 +79,7 @@ describe('Phase 15 — Research Workspace & History UI Views', () => {
     render(<ResearchHistoryView project={project} />);
 
     expect(screen.getByText(/Research Snapshot History & Decision Timeline/i)).toBeInTheDocument();
-    expect(screen.getByText(/Select to Compare/i)).toBeInTheDocument();
+    expect(screen.getByText(/snap_1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Conviction: 8.5\/10/i)).toBeInTheDocument();
   });
 });

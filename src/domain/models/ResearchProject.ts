@@ -56,6 +56,13 @@ export interface ResearchProject {
   auditEvents?: import('../audit/ResearchAuditLog').AuditLogEvent[];
   overrides?: import('../audit/ResearchOverrideRecord').ResearchOverrideRecord[];
   reportPayload?: import('../reports/ReportTypes').InvestmentReportPayload;
+  
+  // Phase 16 Live Data Integration & Replay extensions
+  isReplayMode?: boolean;
+  replayCutoffDate?: string;
+  liveDataChecksum?: string;
+  liveDataStatus?: 'CONNECTED' | 'DEGRADED' | 'UNAVAILABLE';
+  
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;
@@ -82,6 +89,8 @@ export function createResearchProject(params: {
     company: params.company,
     status: 'ONBOARDED',
     documents: params.documents || [],
+    isReplayMode: false,
+    liveDataStatus: 'CONNECTED',
     metadata: {
       analystNotes: params.analystNotes?.trim() || '',
       targetInvestmentHorizon: params.targetInvestmentHorizon || '3_YEARS',

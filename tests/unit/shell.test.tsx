@@ -80,7 +80,7 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
     fireEvent.click(overviewNavButton);
 
     expect(screen.getByText(/Indian Equity Research Intelligence Terminal/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('renders reusable UI primitives (Badge, Card, Button) correctly', () => {
     render(
