@@ -65,14 +65,19 @@ describe('Phase 1 — Application Shell & Terminal Layout', () => {
     fireEvent.click(catNavButton);
     expect(screen.getByText(/Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix/i)).toBeInTheDocument();
 
-    // Test navigating to Phase 13 Scenarios placeholder
+    // Test navigating to Phase 13 Scenarios module
     const scenNavButton = screen.getByRole('button', { name: /Scenario Modeling/i });
     fireEvent.click(scenNavButton);
-    expect(screen.getByText(/SCOPED TO PHASE 13/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scenario Modeling & Forward Financial Projection Engine/i)).toBeInTheDocument();
 
-    // Click Return to Overview
-    const backBtn = screen.getByRole('button', { name: /Return to Overview/i });
-    fireEvent.click(backBtn);
+    // Test navigating to Phase 14 Investment Verdict module
+    const verdictNavButton = screen.getByRole('button', { name: /Investment Verdict/i });
+    fireEvent.click(verdictNavButton);
+    expect(screen.getByText(/Price, Valuation & Margin of Safety/i)).toBeInTheDocument();
+
+    // Click Overview Nav button
+    const overviewNavButton = screen.getByRole('button', { name: /Overview/i });
+    fireEvent.click(overviewNavButton);
 
     expect(screen.getByText(/Indian Equity Research Intelligence Terminal/i)).toBeInTheDocument();
   });

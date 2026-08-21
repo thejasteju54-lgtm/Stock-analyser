@@ -7,7 +7,7 @@ import { SideNav } from './components/layout/SideNav';
 import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
-import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView, CatalystAndRiskView } from './routes';
+import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView, CatalystAndRiskView, ScenarioModelingView, InvestmentVerdictView, ResearchWorkspaceView, ResearchHistoryView } from './routes';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -92,10 +92,16 @@ const ROUTE_DEFINITIONS: Record<
     requiredEngine: 'InvestmentVerdictEngine (Explainable Synthesis)',
   },
   evidence: {
-    title: 'Interactive Evidence Explorer',
+    title: 'Interactive Evidence Explorer & Production Workspace',
     phaseNumber: 'PHASE 15',
-    description: 'Auditability layer exposing fact provenance, page numbers, calculation traces, and formulas.',
-    requiredEngine: 'EvidenceExplorerEngine (Audit Trail Inspector)',
+    description: 'Workflow execution workspace, 11-pillar completeness, refresh queue, and 22-section institutional report.',
+    requiredEngine: 'ProductionWorkflowEngine (Orchestrator & Delivery)',
+  },
+  history: {
+    title: 'Research Snapshot History & Decision Trajectory',
+    phaseNumber: 'PHASE 15',
+    description: 'Immutable snapshot ledger, decision trajectory tracking, and delta explainer.',
+    requiredEngine: 'ResearchSnapshotEngine (Change Detection & Audit Trail)',
   },
 };
 
@@ -107,9 +113,9 @@ export const App: React.FC = () => {
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
-    activePhase: 12,
+    activePhase: 13,
     dataQualityStatus: 'PASSED',
-    memoryState: 'Phase 12: Catalysts & Multi-Dimensional Risk Matrix Active',
+    memoryState: 'Phase 13: Scenario Modeling & Forward Projections Active',
   });
 
   // Re-sync active project if needed
@@ -246,6 +252,25 @@ export const App: React.FC = () => {
             <CatalystAndRiskView
               project={activeProject}
               onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'scenarios' ? (
+            <ScenarioModelingView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'verdict' ? (
+            <InvestmentVerdictView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'evidence' ? (
+            <ResearchWorkspaceView
+              project={activeProject}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ) : activeRoute === 'history' ? (
+            <ResearchHistoryView
+              project={activeProject}
             />
           ) : (
             <PhasePlaceholderView

@@ -13,6 +13,8 @@ import { SectorValuationReport } from '../valuation/ValuationTypes';
 import { TechnicalAnalysisReport } from '../technical/TechnicalTypes';
 import { NewsAndIndustryReport } from '../news/NewsAndIndustryTypes';
 import { CatalystAndRiskReport } from '../risks/CatalystRiskTypes';
+import { ScenarioReport } from '../scenarios/ScenarioTypes';
+import { InvestmentVerdictReport } from '../verdict/VerdictTypes';
 
 export type ProjectLifecycleStatus =
   | 'DRAFT'
@@ -46,6 +48,14 @@ export interface ResearchProject {
   technicalAnalysis?: TechnicalAnalysisReport;
   newsAndIndustryAnalysis?: NewsAndIndustryReport;
   catalystAndRiskAnalysis?: CatalystAndRiskReport;
+  scenarioAnalysis?: ScenarioReport;
+  verdictAnalysis?: InvestmentVerdictReport;
+  workflowState?: import('../workflow/WorkflowTypes').ResearchWorkflowState;
+  snapshots?: import('../snapshots/SnapshotTypes').ResearchSnapshot[];
+  documentRecords?: import('../documents/ResearchDocumentRegistry').ResearchDocumentRecord[];
+  auditEvents?: import('../audit/ResearchAuditLog').AuditLogEvent[];
+  overrides?: import('../audit/ResearchOverrideRecord').ResearchOverrideRecord[];
+  reportPayload?: import('../reports/ReportTypes').InvestmentReportPayload;
   metadata: ResearchProjectMetadata;
   createdAt: string;
   updatedAt: string;

@@ -476,6 +476,86 @@ export class ProjectStorage {
     return updatedProject;
   }
 
+  public static saveScenarioAnalysisForProject(
+    projectId: string,
+    scenarioAnalysis: any
+  ): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      scenarioAnalysis,
+      status: 'ANALYZED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getVerdictAnalysisForProject(projectId: string): any | undefined {
+    const project = this.getProject(projectId);
+    return project?.verdictAnalysis;
+  }
+
+  public static saveVerdictAnalysisForProject(
+    projectId: string,
+    verdictAnalysis: any
+  ): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      verdictAnalysis,
+      status: 'VERIFIED',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getSnapshotsForProject(projectId: string): any[] {
+    const project = this.getProject(projectId);
+    return project?.snapshots || [];
+  }
+
+  public static addSnapshotToProject(projectId: string, snapshot: any): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const snapshots = [...(project.snapshots || []), snapshot];
+    const updatedProject: ResearchProject = {
+      ...project,
+      snapshots,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
+  public static getReportPayloadForProject(projectId: string): any | undefined {
+    const project = this.getProject(projectId);
+    return project?.reportPayload;
+  }
+
+  public static saveReportPayloadForProject(projectId: string, reportPayload: any): ResearchProject | undefined {
+    const project = this.getProject(projectId);
+    if (!project) return undefined;
+
+    const updatedProject: ResearchProject = {
+      ...project,
+      reportPayload,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.saveProject(updatedProject);
+    return updatedProject;
+  }
+
   private static saveAllProjects(projects: ResearchProject[]): void {
     if (!this.isBrowserEnvironment()) return;
     window.localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projects));

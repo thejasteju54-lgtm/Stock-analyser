@@ -406,3 +406,7 @@ export { TechnicalAnalysisView } from './TechnicalAnalysisView';
 export { NewsIntelligenceView } from './NewsIntelligenceView';
 export { IndustryAnalysisView } from './IndustryAnalysisView';
 export { CatalystAndRiskView } from './CatalystAndRiskView';
+export { ScenarioModelingView } from './ScenarioModelingView';
+export { InvestmentVerdictView } from './InvestmentVerdictView';
+export { ResearchWorkspaceView } from './ResearchWorkspaceView';
+export { ResearchHistoryView } from './ResearchHistoryView';

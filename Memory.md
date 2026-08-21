@@ -17,39 +17,44 @@ The authoritative sources of truth are:
 
 ## Current Phase
 
-Phase 12 — Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (Complete)
+Phase 15 — Production Research Workflow, Evidence Explorer & Report Delivery (Complete)
 
 ## Current Status
 
-- React 19 + TypeScript + Vite terminal with institutional-grade Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (`CatalystRiskMasterEngine.ts`):
-  1. Pipeline A — Institutional Catalyst Extraction & Ranking (`CatalystExtractionEngine.ts`):
-     - 12 discrete catalyst types (`EARNINGS_GROWTH`, `CAPACITY_EXPANSION`, `ORDER_BOOK_WIN`, `MARGIN_EXPANSION`, `DELEVERAGING`, `NEW_PRODUCT_LAUNCH`, etc.).
-     - 5 forward time horizons (`IMMEDIATE_0_3M` to `STRUCTURAL`).
-     - Exact 1–5 Catalyst Likelihood Scale (`evaluateCatalystLikelihood`): 5 (Confirmed milestone/contract/statutory approval), 4 (Guidance credibility >= 80%), 3 (Guidance credibility 60-79% / verified trend), 2 (Aspirational / low credibility < 60%), 1 (Conditional / missing data default).
-     - Deterministic 1-10 impact scoring based on financial channels (`REVENUE`, `GROSS_MARGIN`, `EBITDA_MARGIN`, `WORKING_CAPITAL`, `CAPEX`, `CFO`, `DEBT`, etc.).
-     - Verified evidence vs management claim status tracking with provenance back to source layers.
-  2. Pipeline B — Multi-Dimensional Risk Synthesis & 5x5 Matrix Geometry (`RiskSynthesisEngine.ts`):
-     - 9 discrete risk categories (`SECTOR_COMPETITIVE`, `COMPANY_EXECUTION`, `BALANCE_SHEET_LEVERAGE`, `EARNINGS_QUALITY_FORENSIC`, `MANAGEMENT_GOVERNANCE`, `VALUATION_MULTIPLE_COMPRESSION`, `REGULATORY_LEGAL`, `MACRO_COMMODITY_CURRENCY`, `TECHNICAL_PRICE_STRUCTURE`).
-     - Exact 1–5 Risk Probability Scale (`evaluateRiskProbability`): 5 (Almost Certain / Active order / frequency >= 80%), 4 (High / frequency >= 50% / neg quarters >= 2), 3 (Moderate / frequency >= 25% / neg quarters = 1), 2 (Low / trigger proximity <= 30%), 1 (Remote default for missing/unverified data).
-     - Exact 1–5 Risk Impact Scale (`evaluateRiskImpact`): 5 (Catastrophic: PAT impact >= 50% or >= 50% Net Worth), 4 (Severe: PAT impact >= 20% or >= 20% Net Worth / rating downgrade), 3 (Moderate: PAT >= 10% or >= 10% Net Worth), 2 (Minor: PAT >= 3% or >= 3% Net Worth), 1 (Negligible default for missing financial exposure).
-     - Mitigation Stacking with Anti-Double-Counting (`evaluateStackedMitigations`): Deduplicates identical protections (taking max strength), compounds independent mitigations with multiplicative stacking, enforces strict 70% maximum reduction cap, and preserves full documentary lineage.
-     - Multi-layer risk lineage tracking & deduplication (`SAME_UNDERLYING_RISK`, `RELATED_RISK`, `INDEPENDENT_RISK`) to prevent artificial risk inflation.
-     - Decoupled cross-layer risk decomposition mapping across Fundamental, Forensic, Management, Valuation, Technical, and Industry sources.
-  3. Pipeline C — Sector-Specific Falsifiable Thesis Breakers (`ThesisBreakerEngine.ts`):
-     - Falsifiable invalidation conditions across exactly 7 verified mathematical operators (`GREATER_THAN`, `GREATER_THAN_OR_EQUAL`, `LESS_THAN`, `LESS_THAN_OR_EQUAL`, `EQUALS`, `CHANGE_BY`, `PERCENT_CHANGE_BY`) and 6 threshold types.
-     - Automated baseline vs current threshold monitoring with 10% buffer margin warning (`APPROACHING_TRIGGER`).
-     - Point-in-time data freshness gating (`CURRENT`, `STALE`, `EXPIRED`) with strict missing data gating (`NOT_ASSESSABLE`).
-     - Actionable institutional verdict recommendation signals (`REVIEW_FOR_DOWNGRADE`, `ELEVATE_RISK_CONVICTION`, `NEUTRAL_MONITORING`).
-  4. Catalyst-Risk Asymmetry & Aggregate Risk Rating:
-     - Deterministic Upside Potential (0-100) vs Downside Risk (0-100) scoring.
-     - Net Asymmetry Ratio calculation (`HIGHLY_FAVORABLE` [>= 2.5x], `FAVORABLE` [1.5x-2.5x], `BALANCED`, `UNFAVORABLE`, `HIGHLY_ASYMMETRIC_DOWNSIDE`).
-- UI Components & Routes:
-  - `CatalystAndRiskView.tsx` (`/catalysts-risks`), `RiskOverviewCard.tsx`, `MultiDimensionalRiskMatrixCard.tsx` (interactive 5x5 heatmap with cell/row selection), `PrioritizedCatalystCard.tsx`, `ThesisBreakersCard.tsx`, `CrossLayerRiskBreakdownCard.tsx` (layer tab selector), and `RiskDetailModal.tsx` (provenance, mitigations, lineage, and triggers inspector).
+- React 19 + TypeScript + Vite terminal with institutional-grade Production Research Workflow, Evidence Explorer & Report Delivery Engine:
+  1. Single Canonical Analysis Dependency Graph & Invalidation Engine (`AnalysisDependencyGraph.ts`):
+     - Directed Acyclic Graph (DAG) with 15 interconnected analytical phase nodes and 27 explicit dependency edges.
+     - Topological sorting and downstream dependency traversal for surgical incremental recalculations.
+     - Upstream dirty state propagation upon document upload, manual override, or market price update.
+  2. Document Quality, Requirement Policies & Injection Isolation (`DocumentQualityEngine.ts`, `ResearchDocumentRequirementPolicy.ts`, `DocumentInstructionIsolationPolicy.ts`):
+     - Sector- and archetype-aware document requirements across 6 business archetypes.
+     - Fuzzy matching company identity verification (CIN, symbol, legal name) preventing document cross-contamination.
+     - Strict prompt injection defenses stripping system override patterns, prompt leaking directives, and malicious payload instructions.
+  3. Decoupled Two-Tier Readiness Gates (`PipelineReadinessGate.ts`, `DecisionReadinessGate.ts`):
+     - Tier 1: Pre-flight Pipeline Execution Gate validating required filings (P0 documents, verified identity).
+     - Tier 2: Pre-verdict Decision Readiness Gate enforcing mandatory evidence thresholds (audited financials, valuation, forensic review).
+  4. Independent 11-Pillar Evidence Completeness Sentinel (`EvidenceCompletenessEngine.ts`, `CompletenessPolicyRegistry.ts`):
+     - Evaluates 11 distinct analytical pillars (`STATUTORY_FILINGS`, `FINANCIAL_STATEMENTS`, `CALCULATIONS`, `FUNDAMENTAL_HEALTH`, `FORENSIC_INTEGRITY`, `MANAGEMENT_DNA`, `VALUATION_MODELS`, `TECHNICAL_STRUCTURE`, `NEWS_INTELLIGENCE`, `CATALYSTS_AND_RISKS`, `SCENARIOS_AND_PROJECTIONS`).
+     - 4-tier criticality weighting (`CRITICAL`, `HIGH`, `MEDIUM`, `INFORMATIONAL`) producing a deterministic 0–100% project completeness score.
+  5. Category-Specific Data Freshness Engine & Priority Refresh Queue (`ResearchFreshnessEngine.ts`, `ResearchRefreshQueue.ts`):
+     - Freshness rules across 7 data categories with distinct TTL thresholds (Market Price: 48h, News: 7d, Technicals: 7d, Transcripts: 90d, Financials: 365d).
+     - Priority-ranked refresh queue sorting stale and expired data categories by urgency.
+  6. Cryptographic SHA-256 Snapshots & Change Detection Engine (`ResearchSnapshotEngine.ts`, `ResearchChangeDetectionEngine.ts`, `CanonicalJsonSerializer.ts`):
+     - Deterministic recursive JSON canonicalizer and SHA-256 hashing for immutable research snapshots.
+     - Audit hash chaining linking parent snapshot checksums with child snapshot records.
+     - Automated verdict transition and thesis delta explainer computing driver attribution across snapshots.
+  7. Canonical 22-Section Institutional Investment Research Report Engine (`InvestmentResearchReportEngine.ts`, `ReportExportService.ts`):
+     - Assembles 22 standardized institutional sections with complete fact citations, calculation formulas, and source provenance.
+     - Multi-format exporter supporting Browser Print / PDF layout, structured JSON payload, and financial metrics CSV.
+  8. UI Routes & Interactive Production Dashboard:
+     - `ResearchWorkspaceView.tsx` (`/evidence`): Workflow Status Stepper, Document Registry Table, 11-Pillar Evidence Completeness Grid, Pipeline Execution Panel, Freshness & Refresh Queue, 22-Section Report Viewer.
+     - `ResearchHistoryView.tsx` (`/history`): Immutable snapshot ledger, snapshot comparator modal (`SnapshotComparisonModal.tsx`), and decision trajectory tracker.
+     - `ClaimProvenanceDrawer.tsx`: Interactive slide-in drawer displaying deep source citation, location, confidence, and deterministic calculation formula.
 - Typecheck: PASSED (0 errors via `npm.cmd run typecheck`).
 - Lint: PASSED (0 errors via `npm.cmd run lint`).
-- Unit Tests: **318/318 PASSED** across **93 test suites** (10 dedicated Phase 12 suites + 83 previous suites).
-- Build: PASSED (`npm.cmd run build` transformed 1935 modules in 3.33s).
-- Browser Runtime: Active and verified via browser subagent on `http://localhost:5173/`.
+- Unit Tests: **418/418 PASSED** across **130 test suites** (14 dedicated Phase 15 suites + 116 previous suites).
+- Build: PASSED (`npm.cmd run build` transformed 1995 modules in 4.74s).
+- Dev Server: Running at `http://localhost:5173/`.
 
 ## Completed
 
@@ -66,14 +71,14 @@ Phase 12 — Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (
 - Phase 10: Technical Analysis & Price-Action Intelligence Engine (`TechnicalAnalysisEngine.ts`), 8 primary analytical pipelines, 2 synthesis layers (Market Cycle Phase, Technical Risk Fragility), interactive SVG Price Chart with DMA overlays, screenshot visual observation mode, and 9 dedicated unit test suites.
 - Phase 11: News Intelligence & Industry Analysis Engine (`NewsAndIndustryMasterEngine.ts`), Pipelines A & B, source hierarchy (Tier 1–4), deduplication & lineage, entity resolution, 33 event categories, deterministic materiality scoring, source conflict logging, catalyst/risk schedules, industry growth segregation (Historical vs Forecast), Porter 5-Forces, 5-stage value chains, peer comparison with period mismatch protection, 3-horizon outlook, non-mutating cross-layer sensitivity mapping, and 10 dedicated unit test suites.
 - Phase 12: Catalysts, Thesis Breakers & Multi-Dimensional Risk Matrix Engine (`CatalystRiskMasterEngine.ts`), 12 catalyst categories, exact 1-5 likelihood scale, 9 risk categories, exact 1-5 probability & impact scales, net worth percentage exposure, verified mitigation stacking with anti-double-counting (70% cap), 7 mathematical thesis breaker operators, catalyst-risk asymmetry scoring, cross-layer risk decomposition, and 10 dedicated unit test suites.
-
-## In Progress
-
-- Ready for Phase 13: Scenario Engine (Bull / Base / Bear Scenario Projections).
+- Phase 13: Scenario Modeling & Forward Financial Projection Engine (`ScenarioMasterEngine.ts`), 3-state differentiated scenario generation (Base, Bull, Bear), 4-component probability weighting, operating leverage & incremental margin policy, maintenance vs growth capex classification, working capital lookback with IQR outlier filtering, non-circular debt/cash scheduling, 4-horizon complete statement bridge, 2D valuation sensitivity heatmap, 8-tier assumption provenance with analyst override drawer, falsifiable scenario invalidation gates, and 12 dedicated unit test suites.
+- Phase 14: Final Investment Synthesis & Decision Engine (`VerdictMasterEngine.ts`), archetype-aware margin of safety policy (`MarginOfSafetyPolicyRegistry.ts`), forensic severity mapping & decision blocker model (`ForensicDecisionPolicyRegistry.ts`), single vs structural thesis breaker decision policy (`ThesisBreakerDecisionPolicy.ts`), cross-layer contradiction resolution (`DecisionConflictPolicyRegistry.ts`), 0.0–1.0 normalized conviction calculation (`ConvictionPolicyRegistry.ts`), 3-tier price freshness validation (`MarketPriceSourcePolicy.ts`), accumulation entry bracket policy (`InterestingPricePolicyRegistry.ts`), 8-tier precedence override hierarchy & decision matrix (`InvestmentDecisionPolicyRegistry.ts`), high-density institutional UI (`InvestmentVerdictView.tsx`), Decision Audit Trail Drawer (`DecisionAuditTrailDrawer.tsx`), and 11 dedicated unit test suites.
+- Phase 15: Production Research Workflow, Evidence Explorer & Report Delivery (`ResearchWorkflowEngine.ts`), Canonical 22-Section Investment Research Report Assembler (`InvestmentResearchReportEngine.ts`), Multi-Format Exporter (`ReportExportService.ts`), Immutable Snapshot & Cryptographic Checksum Engine (`ResearchSnapshotEngine.ts`), Research Snapshot Change Detection & Delta Explainer (`ResearchChangeDetectionEngine.ts`), Independent 11-Pillar Evidence Completeness Sentinel (`EvidenceCompletenessEngine.ts`), Category-Specific Data Freshness Engine (`ResearchFreshnessEngine.ts`), Single Canonical Analysis Dependency Graph & Invalidation Engine (`AnalysisDependencyGraph.ts`), Document Quality & Requirement Policies (`DocumentQualityEngine.ts`, `ResearchDocumentRequirementPolicy.ts`), Security & Prompt Injection Defense Policy (`DocumentInstructionIsolationPolicy.ts`), Research Workspace UI View (`ResearchWorkspaceView.tsx`), Research Snapshot History UI View (`ResearchHistoryView.tsx`), Interactive Claim Provenance Drawer (`ClaimProvenanceDrawer.tsx`), and 14 dedicated unit test suites.
 
 ## Next Action
 
-- Await user approval and prompt for Phase 13 execution. DO NOT start Phase 13 automatically.
+- All analytical and delivery phases (Phases 1–15) are complete with 100% test pass rate across 130 test suites (418 unit tests).
+- Ready for Phase 16 (Full QA & Verification Audit) or subsequent production ship readiness phases.
 
 ## Architecture Decisions
 

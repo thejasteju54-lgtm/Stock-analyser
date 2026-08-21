@@ -13,7 +13,8 @@ export type TerminalRoute =
   | 'scenarios'
   | 'quality-gate'
   | 'verdict'
-  | 'evidence';
+  | 'evidence'
+  | 'history';
 
 export interface CompanyEntitySummary {
   name: string;
