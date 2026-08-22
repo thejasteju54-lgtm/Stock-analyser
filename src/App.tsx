@@ -12,6 +12,7 @@ import { GuidedTourProvider, useGuidedTour } from './components/guided/GuidedTou
 import { GuidedTourOverlay } from './components/guided/GuidedTourOverlay';
 import { InstitutionalRulesModal } from './components/guided/InstitutionalRulesModal';
 import { ContextualHelpModal } from './components/guided/ContextualHelpModal';
+import { AutomatedResearchModal } from './components/automated/AutomatedResearchModal';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -113,6 +114,7 @@ const AppContent: React.FC = () => {
   const [activeRoute, setActiveRoute] = useState<TerminalRoute>('overview');
   const [activeProject, setActiveProject] = useState<ResearchProject>(() => ProjectStorage.getActiveProject());
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
+  const [isAutoResearchModalOpen, setIsAutoResearchModalOpen] = useState<boolean>(false);
   const [fundamentalsViewMode, setFundamentalsViewMode] = useState<'HEALTH' | 'CALCULATIONS'>('HEALTH');
 
   const {
@@ -162,6 +164,7 @@ const AppContent: React.FC = () => {
         systemStatus={systemStatus}
         onProjectChange={handleProjectChange}
         onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
+        onOpenAutoResearchModal={() => setIsAutoResearchModalOpen(true)}
       />
 
       {/* Persistent 15-Module Side Navigation */}
@@ -305,6 +308,17 @@ const AppContent: React.FC = () => {
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
         onProjectCreated={handleProjectCreated}
+      />
+
+      {/* Phase 21 One-Click Automated Internet Research Modal */}
+      <AutomatedResearchModal
+        isOpen={isAutoResearchModalOpen}
+        onClose={() => setIsAutoResearchModalOpen(false)}
+        onResearchComplete={(project) => {
+          setActiveProject(project);
+          setIsAutoResearchModalOpen(false);
+          setActiveRoute('evidence');
+        }}
       />
 
       {/* Guided Tour Floating Spotlight Overlay */}

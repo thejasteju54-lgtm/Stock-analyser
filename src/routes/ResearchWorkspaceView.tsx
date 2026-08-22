@@ -24,6 +24,8 @@ import { ScenarioComparisonGrid } from '../components/workspace/ScenarioComparis
 import { ForensicQualityOverviewCard } from '../components/workspace/ForensicQualityOverviewCard';
 import { DataQualityCenterCard } from '../components/workspace/DataQualityCenterCard';
 import { VerdictReliabilityPanel } from '../components/workspace/VerdictReliabilityPanel';
+import { ResearchDiscoveryCard } from '../components/automated/ResearchDiscoveryCard';
+import { SourceComparisonModal } from '../components/automated/SourceComparisonModal';
 import { WhyEvidenceModal, WhyEvidenceItem } from '../components/common/WhyEvidenceModal';
 import { DecisionAuditTrailDrawer } from '../components/verdict/DecisionAuditTrailDrawer';
 import { Briefcase, History } from 'lucide-react';
@@ -46,6 +48,7 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
   const [executionReport, setExecutionReport] = useState<PipelineExecutionReport | undefined>(undefined);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [isAuditDrawerOpen, setIsAuditDrawerOpen] = useState(false);
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(null);
   const [compareSnapshotId, setCompareSnapshotId] = useState<string | null>(null);
   const [whyEvidenceItem, setWhyEvidenceItem] = useState<WhyEvidenceItem | null>(null);
@@ -191,7 +194,18 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
 
       <LiveDataStatusPanel />
 
-      {/* 3. Accuracy Center & Data Quality Vitals */}
+      {/* 3. Autonomous Ingestion Health & Coverage */}
+      <ResearchDiscoveryCard
+        evidenceCoveragePercent={94}
+        primarySourcesCount={project.documents?.length || 8}
+        secondarySourcesCount={14}
+        sourceConflictsCount={0}
+        missingCriticalDataCount={0}
+        onRefreshClick={handleLiveFeedsRefresh}
+        onInvestigateConflicts={() => setIsConflictModalOpen(true)}
+      />
+
+      {/* 4. Accuracy Center & Data Quality Vitals */}
       <DataQualityCenterCard
         evidenceCompletenessPercent={92}
         freshnessStatus="HIGH"
@@ -202,52 +216,52 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
         onRefreshClick={handleLiveFeedsRefresh}
       />
 
-      {/* 4. LEVEL 1: Executive Summary Card (Above-The-Fold Rule) */}
+      {/* 5. LEVEL 1: Executive Summary Card (Above-The-Fold Rule) */}
       <ExecutiveSummaryCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
         onOpenAuditDrawer={() => setIsAuditDrawerOpen(true)}
       />
 
-      {/* 5. LEVEL 1: What Matters Now (Top 3 Catalysts, Risks, Thesis Breakers) */}
+      {/* 6. LEVEL 1: What Matters Now (Top 3 Catalysts, Risks, Thesis Breakers) */}
       <WhatMattersNowCard
         report={verdictReport}
       />
 
-      {/* 6. LEVEL 1: Valuation Range & Margin of Safety */}
+      {/* 7. LEVEL 1: Valuation Range & Margin of Safety */}
       <ValuationSpectrumCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 7. LEVEL 2: 5-Year Financial Statement Trajectory & Forward Projections */}
+      {/* 8. LEVEL 2: 5-Year Financial Statement Trajectory & Forward Projections */}
       <FinancialPerformanceTable
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 8. LEVEL 2: Quantitative Scenario Spectrum */}
+      {/* 9. LEVEL 2: Quantitative Scenario Spectrum */}
       <ScenarioComparisonGrid
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 9. LEVEL 3: Forensic & Governance Quality Overview */}
+      {/* 10. LEVEL 3: Forensic & Governance Quality Overview */}
       <ForensicQualityOverviewCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 10. LEVEL 3: Verdict Reliability & Multi-Dimensional Integrity */}
+      {/* 11. LEVEL 3: Verdict Reliability & Multi-Dimensional Integrity */}
       <VerdictReliabilityPanel
         report={verdictReport}
         onOpenAuditDrawer={() => setIsAuditDrawerOpen(true)}
       />
 
-      {/* 11. LEVEL 4: Workflow Lifecycle Stepper & Document Registry */}
+      {/* 12. LEVEL 4: Workflow Lifecycle Stepper & Document Registry */}
       <WorkflowStatusStepper currentState={project.workflowState || 'DECISION_READY'} />
       <DocumentRegistryTable documents={project.documents || []} />
 
-      {/* 12. LEVEL 4: 11-Pillar Evidence Completeness Grid & Freshness */}
+      {/* 13. LEVEL 4: 11-Pillar Evidence Completeness Grid & Freshness */}
       <EvidenceCompletenessGrid completenessReport={completenessReport} />
       <PipelineExecutionPanel
         executionReport={executionReport}
@@ -260,7 +274,7 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
         onRefreshCategory={() => handleLiveFeedsRefresh()}
       />
 
-      {/* 13. Final Institutional 22-Section Research Report Delivery */}
+      {/* 14. Final Institutional 22-Section Research Report Delivery */}
       <InvestmentReportViewer report={investmentReport} />
 
       {/* Why Evidence Slide-Over Modal */}
@@ -268,6 +282,14 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
         isOpen={whyEvidenceItem !== null}
         onClose={() => setWhyEvidenceItem(null)}
         evidence={whyEvidenceItem}
+      />
+
+      {/* Cross-Source Conflict Investigator */}
+      <SourceComparisonModal
+        isOpen={isConflictModalOpen}
+        onClose={() => setIsConflictModalOpen(false)}
+        metricKey="Revenue from Operations"
+        period="FY24"
       />
 
       {/* Decision Audit Trail Drawer */}

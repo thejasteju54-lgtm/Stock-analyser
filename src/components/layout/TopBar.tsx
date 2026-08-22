@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ShieldCheck, Clock, Plus, BarChart3, Compass, BookOpen } from 'lucide-react';
+import { Activity, ShieldCheck, Clock, Plus, BarChart3, Compass, BookOpen, Zap } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { SystemStatus } from '../../types';
@@ -12,6 +12,7 @@ interface TopBarProps {
   systemStatus: SystemStatus;
   onProjectChange: (project: ResearchProject) => void;
   onOpenNewProjectModal: () => void;
+  onOpenAutoResearchModal?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -19,6 +20,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   systemStatus,
   onProjectChange,
   onOpenNewProjectModal,
+  onOpenAutoResearchModal,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const { startTour, openRulesModal } = useGuidedTour();
@@ -97,6 +99,18 @@ export const TopBar: React.FC<TopBarProps> = ({
           </Button>
         )}
 
+        {onOpenAutoResearchModal && (
+          <Button
+            size="sm"
+            variant="primary"
+            icon={<Zap size={12} />}
+            onClick={onOpenAutoResearchModal}
+            id="topbar-auto-research-btn"
+          >
+            Auto Research
+          </Button>
+        )}
+
         <Button
           size="sm"
           variant="secondary"
@@ -113,7 +127,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Guided Tour Trigger */}
         <Button
           size="sm"
-          variant="primary"
+          variant="secondary"
           icon={<Compass size={12} />}
           onClick={() => startTour(0)}
           id="topbar-guided-tour-btn"
