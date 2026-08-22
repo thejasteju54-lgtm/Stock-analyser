@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ShieldCheck, Clock, Plus, BarChart3 } from 'lucide-react';
+import { Activity, ShieldCheck, Clock, Plus, BarChart3, Compass, BookOpen } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { SystemStatus } from '../../types';
 import { ResearchProject } from '../../domain/models/ResearchProject';
 import { ProjectSwitcher } from '../project/ProjectSwitcher';
+import { useGuidedTour } from '../guided/GuidedTourContext';
 
 interface TopBarProps {
   activeProject: ResearchProject | null;
@@ -20,6 +21,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenNewProjectModal,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
+  const { startTour, openRulesModal } = useGuidedTour();
 
   useEffect(() => {
     const update = () => {
@@ -106,8 +108,30 @@ export const TopBar: React.FC<TopBarProps> = ({
         </Button>
       </div>
 
-      {/* Right Controls: Market Time & Engine Health */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Right Controls: Guided Tour, Institutional Rules, Market Time & Engine Health */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Guided Tour Trigger */}
+        <Button
+          size="sm"
+          variant="primary"
+          icon={<Compass size={12} />}
+          onClick={() => startTour(0)}
+          id="topbar-guided-tour-btn"
+        >
+          Guided Tour
+        </Button>
+
+        {/* Institutional Rules */}
+        <Button
+          size="sm"
+          variant="secondary"
+          icon={<BookOpen size={12} />}
+          onClick={openRulesModal}
+          id="topbar-rules-btn"
+        >
+          Analyst Rules
+        </Button>
+
         <div
           style={{
             display: 'flex',

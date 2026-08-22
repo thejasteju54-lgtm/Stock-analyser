@@ -22,6 +22,8 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { MetricCard } from '../components/common/MetricCard';
 
+import { useGuidedTour } from '../components/guided/GuidedTourContext';
+
 interface RouteViewProps {
   activeProject: ResearchProject | null;
   onNavigate: (route: TerminalRoute) => void;
@@ -41,11 +43,13 @@ export const OverviewView: React.FC<RouteViewProps> = ({
     ? getBusinessModelDefinition(company.businessModel) || getBusinessModelDefinition('NON_FINANCIAL_OPERATING')
     : undefined;
   const allProjects = ProjectStorage.listProjects();
+  const { startTour } = useGuidedTour();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} id="view-overview">
       {/* Institutional Hero Banner */}
       <div
+        id="overview-hero-card"
         style={{
           background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)',
           border: '1px solid #bfdbfe',
@@ -73,7 +77,16 @@ export const OverviewView: React.FC<RouteViewProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <Button
+            variant="secondary"
+            size="md"
+            icon={<Compass size={14} />}
+            onClick={() => startTour(0)}
+            id="overview-guided-tour-btn"
+          >
+            Start Guided Tour
+          </Button>
           <Button
             size="md"
             icon={<Plus size={14} />}

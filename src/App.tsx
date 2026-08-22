@@ -8,6 +8,10 @@ import { StatusBar } from './components/layout/StatusBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NewProjectModal } from './components/project/NewProjectModal';
 import { OverviewView, PhasePlaceholderView, IngestionView, EvidenceExtractionView, FinancialCalculationsView, FundamentalHealthView, ForensicInvestigationView, ManagementDnaView, SectorValuationView, TechnicalAnalysisView, NewsIntelligenceView, IndustryAnalysisView, CatalystAndRiskView, ScenarioModelingView, InvestmentVerdictView, ResearchWorkspaceView, ResearchHistoryView } from './routes';
+import { GuidedTourProvider, useGuidedTour } from './components/guided/GuidedTourContext';
+import { GuidedTourOverlay } from './components/guided/GuidedTourOverlay';
+import { InstitutionalRulesModal } from './components/guided/InstitutionalRulesModal';
+import { ContextualHelpModal } from './components/guided/ContextualHelpModal';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
@@ -105,11 +109,19 @@ const ROUTE_DEFINITIONS: Record<
   },
 };
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [activeRoute, setActiveRoute] = useState<TerminalRoute>('overview');
   const [activeProject, setActiveProject] = useState<ResearchProject>(() => ProjectStorage.getActiveProject());
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
   const [fundamentalsViewMode, setFundamentalsViewMode] = useState<'HEALTH' | 'CALCULATIONS'>('HEALTH');
+
+  const {
+    isRulesModalOpen,
+    closeRulesModal,
+    isHelpModalOpen,
+    helpTopic,
+    closeHelpModal,
+  } = useGuidedTour();
 
   const [systemStatus] = useState<SystemStatus>({
     engineStatus: 'READY',
@@ -294,6 +306,30 @@ export const App: React.FC = () => {
         onClose={() => setIsNewProjectModalOpen(false)}
         onProjectCreated={handleProjectCreated}
       />
+
+      {/* Guided Tour Floating Spotlight Overlay */}
+      <GuidedTourOverlay />
+
+      {/* 10 Institutional Rules Reference Modal */}
+      <InstitutionalRulesModal
+        isOpen={isRulesModalOpen}
+        onClose={closeRulesModal}
+      />
+
+      {/* Plain Language Contextual Help Modal */}
+      <ContextualHelpModal
+        isOpen={isHelpModalOpen}
+        onClose={closeHelpModal}
+        topic={helpTopic}
+      />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <GuidedTourProvider>
+      <AppContent />
+    </GuidedTourProvider>
   );
 };
