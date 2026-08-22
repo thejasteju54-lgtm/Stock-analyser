@@ -26,9 +26,10 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(3, 7, 18, 0.85)',
-        backdropFilter: 'blur(8px)',
-        zIndex: 1000,
+        background: 'rgba(15, 23, 42, 0.45)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        zIndex: 9999,
         display: 'flex',
         justifyContent: 'flex-end',
       }}
@@ -36,35 +37,35 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
     >
       <div
         style={{
-          width: '600px',
-          maxWidth: '90vw',
+          width: '580px',
+          maxWidth: '92vw',
           height: '100%',
-          background: '#0c1017',
-          borderLeft: '1px solid #1e293b',
+          background: '#ffffff',
+          borderLeft: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
+          boxShadow: 'var(--shadow-glass)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
           style={{
-            padding: '20px',
-            borderBottom: '1px solid #1e293b',
+            padding: '20px 24px',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: '#121824',
+            background: '#ffffff',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldCheck size={20} className="text-sky-400" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ShieldCheck size={22} color="var(--brand-blue)" />
             <div>
-              <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--brand-navy)', margin: 0 }}>
                 Decision Audit Trail & Provenance
               </h2>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 Reproducible execution trace for {report.companySymbol}
               </div>
             </div>
@@ -73,66 +74,71 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
           <button
             onClick={onClose}
             style={{
-              background: 'transparent',
+              background: '#f1f5f9',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               padding: '6px',
-              borderRadius: '4px',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Snapshot Identity Bar */}
-          <div style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '14px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '8px' }}>
+          <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '14px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-blue)', textTransform: 'uppercase', marginBottom: '8px' }}>
               Execution Snapshot Metadata
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
               <div>
-                <span style={{ color: '#64748b' }}>Policy Version:</span>{' '}
-                <strong style={{ color: '#f8fafc' }}>{snapshot.policyVersion}</strong>
+                <span style={{ color: 'var(--text-muted)' }}>Policy Version:</span>{' '}
+                <strong style={{ color: 'var(--brand-navy)' }}>{snapshot.policyVersion}</strong>
               </div>
               <div>
-                <span style={{ color: '#64748b' }}>Decision Rule:</span>{' '}
-                <strong style={{ color: '#34d399' }}>{snapshot.appliedDecisionRuleId}</strong>
+                <span style={{ color: 'var(--text-muted)' }}>Decision Rule:</span>{' '}
+                <strong style={{ color: 'var(--color-bullish)' }}>{snapshot.appliedDecisionRuleId}</strong>
               </div>
               <div>
-                <span style={{ color: '#64748b' }}>Snapshot ID:</span>{' '}
-                <code style={{ color: '#a78bfa' }}>{snapshot.snapshotId.substring(0, 16)}</code>
+                <span style={{ color: 'var(--text-muted)' }}>Snapshot ID:</span>{' '}
+                <code style={{ color: 'var(--color-indigo)' }}>{snapshot.snapshotId.substring(0, 16)}</code>
               </div>
               <div>
-                <span style={{ color: '#64748b' }}>Checksum:</span>{' '}
-                <code style={{ color: '#38bdf8' }}>{snapshot.reproducibilityChecksum}</code>
+                <span style={{ color: 'var(--text-muted)' }}>Checksum:</span>{' '}
+                <code style={{ color: 'var(--brand-blue)' }}>{snapshot.reproducibilityChecksum}</code>
               </div>
             </div>
           </div>
 
           {/* Active Decision Blockers */}
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Lock size={14} className="text-amber-400" />
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Lock size={14} color="var(--color-warning)" />
               Active Decision Blockers ({activeBlockers.length})
             </div>
 
             {activeBlockers.length === 0 ? (
-              <div style={{ background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '6px', padding: '12px', fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'var(--color-bullish-bg)', border: '1px solid var(--color-bullish-border)', borderRadius: '6px', padding: '12px', fontSize: '12px', color: 'var(--color-bullish)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CheckCircle2 size={16} /> Zero active decision blockers. Full BUY/HOLD eligibility intact.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {activeBlockers.map((blk) => (
-                  <div key={blk.blockerId} style={{ background: '#121824', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '12px' }}>
+                  <div key={blk.blockerId} style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#ef4444' }}>{blk.type}</span>
-                      <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 600 }}>{blk.currentStatus}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-bearish)' }}>{blk.type}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-warning)', fontWeight: 600 }}>{blk.currentStatus}</span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#cbd5e1' }}>{blk.requiredResolution}</div>
-                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>Source: {blk.sourcePhase}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--brand-navy)' }}>{blk.requiredResolution}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>Source: {blk.sourcePhase}</div>
                   </div>
                 ))}
               </div>
@@ -141,23 +147,23 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
 
           {/* What Would Change the Verdict? */}
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <RefreshCw size={14} className="text-cyan-400" />
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <RefreshCw size={14} color="var(--brand-blue)" />
               What Would Change the Verdict? (Transition Triggers)
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {changeConditions.potentialTransitions.map((t, idx) => (
-                <div key={idx} style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: '#38bdf8', marginBottom: '4px' }}>
+                <div key={idx} style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: 'var(--brand-blue)', marginBottom: '4px' }}>
                     <span>{t.fromVerdict}</span>
                     <span>→</span>
-                    <span style={{ color: t.toVerdict === 'BUY' ? '#10b981' : t.toVerdict === 'HOLD' ? '#f59e0b' : '#ef4444' }}>
+                    <span style={{ color: t.toVerdict === 'BUY' ? 'var(--color-bullish)' : t.toVerdict === 'HOLD' ? 'var(--color-warning)' : 'var(--color-bearish)' }}>
                       {t.toVerdict}
                     </span>
-                    <span style={{ fontSize: '10px', color: '#64748b', marginLeft: 'auto' }}>Threshold: {t.threshold}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: 'auto' }}>Threshold: {t.threshold}</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#cbd5e1' }}>{t.conditionDescription}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--brand-navy)' }}>{t.conditionDescription}</div>
                 </div>
               ))}
             </div>
@@ -165,24 +171,24 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
 
           {/* Cross-Layer Conflict Resolutions */}
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={14} className="text-violet-400" />
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={14} color="var(--color-indigo)" />
               Cross-Layer Contradictions & Audit Resolutions ({auditTrail.conflictAudit.length})
             </div>
 
             {auditTrail.conflictAudit.length === 0 ? (
-              <div style={{ background: 'rgba(56, 189, 248, 0.04)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '6px', padding: '12px', fontSize: '12px', color: '#38bdf8' }}>
+              <div style={{ background: 'var(--brand-blue-light)', border: '1px solid var(--brand-blue-subtle)', borderRadius: '6px', padding: '12px', fontSize: '12px', color: 'var(--brand-blue)' }}>
                 Zero cross-layer contradictions extracted across filings.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {auditTrail.conflictAudit.map((cnf) => (
-                  <div key={cnf.conflictId} style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div key={cnf.conflictId} style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '10px 12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 600, color: '#f8fafc' }}>{cnf.metric}</span>
-                      <span style={{ fontSize: '10px', color: '#34d399', fontWeight: 700 }}>{cnf.resolutionStatus}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--brand-navy)' }}>{cnf.metric}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-bullish)', fontWeight: 700 }}>{cnf.resolutionStatus}</span>
                     </div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>{cnf.resolutionReason}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{cnf.resolutionReason}</div>
                   </div>
                 ))}
               </div>
@@ -191,18 +197,14 @@ export const DecisionAuditTrailDrawer: React.FC<DecisionAuditTrailDrawerProps> =
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid #1e293b', background: '#121824', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-subtle)', background: '#ffffff', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
+            className="terminal-btn terminal-btn-primary"
             style={{
-              background: '#38bdf8',
-              color: '#07090e',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 18px',
+              padding: '8px 20px',
               fontSize: '12px',
               fontWeight: 700,
-              cursor: 'pointer',
             }}
           >
             Close Audit Inspector

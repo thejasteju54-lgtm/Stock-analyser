@@ -10,49 +10,48 @@ export const QualityAndGovernanceCard: React.FC<QualityAndGovernanceCardProps> =
   const { businessQuality, forensics, management } = report;
 
   const forensicStateBadge = {
-    NO_MATERIAL_CONCERN: { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', text: 'Clean Forensic Profile' },
-    WATCH: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', text: 'Forensic Watch (+3% MoS)' },
-    MATERIAL_CONCERN: { color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)', text: 'Material Forensic Anomaly' },
-    SEVERE_CONCERN: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', text: 'Severe Forensic Concern' },
-    CRITICAL_OVERRIDE: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)', text: 'Critical Override (AVOID)' },
-    NOT_ASSESSABLE: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', text: 'Forensics Unassessable' },
+    NO_MATERIAL_CONCERN: { color: 'var(--color-bullish)', bg: 'var(--color-bullish-bg)', border: 'var(--color-bullish-border)', text: 'Clean Forensic Profile' },
+    WATCH: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', border: 'var(--color-warning-border)', text: 'Forensic Watch (+3% MoS)' },
+    MATERIAL_CONCERN: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', border: 'var(--color-warning-border)', text: 'Material Forensic Anomaly' },
+    SEVERE_CONCERN: { color: 'var(--color-bearish)', bg: 'var(--color-bearish-bg)', border: 'var(--color-bearish-border)', text: 'Severe Forensic Concern' },
+    CRITICAL_OVERRIDE: { color: 'var(--color-bearish)', bg: 'var(--color-bearish-bg)', border: 'var(--color-bearish-border)', text: 'Critical Override (AVOID)' },
+    NOT_ASSESSABLE: { color: 'var(--text-muted)', bg: '#f1f5f9', border: 'var(--border-subtle)', text: 'Forensics Unassessable' },
   }[forensics.forensicState];
 
   const mgmtStateBadge = {
-    EXCELLENT: { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', text: 'High Credibility' },
-    GOOD: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', text: 'Solid Credibility' },
-    MIXED: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', text: 'Mixed Execution' },
-    WEAK: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', text: 'Weak Guidance Delivery' },
-    SEVERE_CONCERN: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)', text: 'Governance Concern' },
-    NOT_ASSESSABLE: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', text: 'Management Unassessable' },
+    EXCELLENT: { color: 'var(--color-bullish)', bg: 'var(--color-bullish-bg)', border: 'var(--color-bullish-border)', text: 'High Credibility' },
+    GOOD: { color: 'var(--brand-blue)', bg: 'var(--brand-blue-light)', border: 'var(--brand-blue-subtle)', text: 'Solid Credibility' },
+    MIXED: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', border: 'var(--color-warning-border)', text: 'Mixed Execution' },
+    WEAK: { color: 'var(--color-bearish)', bg: 'var(--color-bearish-bg)', border: 'var(--color-bearish-border)', text: 'Weak Guidance Delivery' },
+    SEVERE_CONCERN: { color: 'var(--color-bearish)', bg: 'var(--color-bearish-bg)', border: 'var(--color-bearish-border)', text: 'Governance Concern' },
+    NOT_ASSESSABLE: { color: 'var(--text-muted)', bg: '#f1f5f9', border: 'var(--border-subtle)', text: 'Management Unassessable' },
   }[management.managementState];
 
   return (
     <div
+      className="terminal-card"
       style={{
-        background: '#0c1017',
-        border: '1px solid #1e293b',
-        borderRadius: '8px',
-        padding: '20px',
-        height: '100%',
+        padding: '18px 20px',
         display: 'flex',
         flexDirection: 'column',
+        gap: '14px',
+        background: '#ffffff',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', color: '#f8fafc', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Award size={16} className="text-emerald-400" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--brand-navy)', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+          <Award size={16} color="var(--color-bullish)" />
           Business Quality, Forensics & Governance
         </h3>
         <span
           style={{
             fontSize: '11px',
             fontWeight: 700,
-            color: '#10b981',
-            background: 'rgba(16, 185, 129, 0.1)',
+            color: 'var(--color-bullish)',
+            background: 'var(--color-bullish-bg)',
             padding: '3px 8px',
             borderRadius: '4px',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            border: '1px solid var(--color-bullish-border)',
           }}
         >
           Quality Score: {businessQuality.businessQualityScore.toFixed(1)} / 100
@@ -60,35 +59,35 @@ export const QualityAndGovernanceCard: React.FC<QualityAndGovernanceCardProps> =
       </div>
 
       {/* 3 Pillar Summary Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {/* Fundamental Pillars */}
-        <div style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '12px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+        <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '12px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Fundamental Health
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Revenue Quality:</span>
-              <span style={{ color: '#f8fafc', fontWeight: 600 }}>{businessQuality.revenueQualityTier}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Revenue Quality:</span>
+              <span style={{ color: 'var(--brand-navy)', fontWeight: 600 }}>{businessQuality.revenueQualityTier}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Cash Conversion:</span>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>{businessQuality.cashConversionQuality}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Cash Conversion:</span>
+              <span style={{ color: 'var(--color-bullish)', fontWeight: 700 }}>{businessQuality.cashConversionQuality}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Balance Sheet:</span>
-              <span style={{ color: '#38bdf8', fontWeight: 600 }}>{businessQuality.balanceSheetStrength}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Balance Sheet:</span>
+              <span style={{ color: 'var(--brand-blue)', fontWeight: 600 }}>{businessQuality.balanceSheetStrength}</span>
             </div>
           </div>
         </div>
 
         {/* Forensic Accounting */}
-        <div style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '12px' }}>
+        <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase' }}>
               Forensic Health
             </span>
-            <Shield size={12} className="text-emerald-400" />
+            <Shield size={12} color="var(--color-bullish)" />
           </div>
           <div
             style={{
@@ -98,24 +97,25 @@ export const QualityAndGovernanceCard: React.FC<QualityAndGovernanceCardProps> =
               background: forensicStateBadge.bg,
               padding: '3px 6px',
               borderRadius: '4px',
-              marginBottom: '8px',
+              marginBottom: '6px',
               display: 'inline-block',
+              border: `1px solid ${forensicStateBadge.border}`,
             }}
           >
             {forensicStateBadge.text}
           </div>
-          <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
             {forensics.decisionImpactSummary}
           </div>
         </div>
 
         {/* Management & Governance */}
-        <div style={{ background: '#121824', border: '1px solid #1e293b', borderRadius: '6px', padding: '12px' }}>
+        <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-navy)', textTransform: 'uppercase' }}>
               Management DNA
             </span>
-            <UserCheck size={12} className="text-sky-400" />
+            <UserCheck size={12} color="var(--brand-blue)" />
           </div>
           <div
             style={{
@@ -125,34 +125,35 @@ export const QualityAndGovernanceCard: React.FC<QualityAndGovernanceCardProps> =
               background: mgmtStateBadge.bg,
               padding: '3px 6px',
               borderRadius: '4px',
-              marginBottom: '8px',
+              marginBottom: '6px',
               display: 'inline-block',
+              border: `1px solid ${mgmtStateBadge.border}`,
             }}
           >
             {mgmtStateBadge.text} ({management.credibilityScore ?? 'N/A'}/100)
           </div>
-          <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1.4 }}>
-            Pledge: <strong style={{ color: '#10b981' }}>{management.promoterPledgePercent}%</strong> • Stake: <strong>{management.stakeChangeTrajectory}</strong>
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Pledge: <strong style={{ color: 'var(--color-bullish)' }}>{management.promoterPledgePercent}%</strong> • Stake: <strong>{management.stakeChangeTrajectory}</strong>
           </div>
         </div>
       </div>
 
       {/* Key Strengths and Watch Items */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
-        <div style={{ background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '4px', padding: '8px 12px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', padding: '8px 12px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-bullish)', textTransform: 'uppercase', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <CheckCircle2 size={11} /> Top Operational Strength
           </div>
-          <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
+          <div style={{ fontSize: '11px', color: 'var(--brand-navy)' }}>
             {businessQuality.strengths[0] || 'Durable competitive advantage with strong ROCE'}
           </div>
         </div>
 
-        <div style={{ background: 'rgba(245, 158, 11, 0.04)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '4px', padding: '8px 12px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', padding: '8px 12px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-warning)', textTransform: 'uppercase', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <AlertTriangle size={11} /> Primary Watch Item
           </div>
-          <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
+          <div style={{ fontSize: '11px', color: 'var(--brand-navy)' }}>
             {businessQuality.watchItems[0] || 'Raw material inflation pass-through timing'}
           </div>
         </div>
