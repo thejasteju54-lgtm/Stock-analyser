@@ -12,45 +12,45 @@ export const StatusBar: React.FC<StatusBarProps> = ({ systemStatus }) => {
       {/* Left items */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Terminal size={11} color="#38bdf8" />
-          <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>SYSTEM:</span>
-          <span style={{ color: '#38bdf8' }}>MODULAR_MONOLITH_ACTIVE</span>
+          <Terminal size={11} color="var(--brand-blue)" />
+          <span style={{ color: 'var(--brand-navy)', fontWeight: 700 }}>SYSTEM:</span>
+          <span style={{ color: 'var(--brand-blue)', fontWeight: 600 }}>MODULAR_MONOLITH_ACTIVE</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <span style={{ color: 'var(--text-muted)' }}>CURRENT_PHASE:</span>
+          <span style={{ color: 'var(--text-muted)' }}>STATUS:</span>
           <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-            PHASE {systemStatus.activePhase} (APPLICATION_SHELL)
+            RESEARCH_ENGINE_ACTIVE
           </span>
         </div>
       </div>
 
       {/* Center item: Anti-Hallucination & Provenance Sentinel */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <ShieldCheck size={12} color="#10b981" />
-        <span style={{ color: '#10b981', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <ShieldCheck size={12} color="var(--color-bullish)" />
+        <span style={{ color: 'var(--color-bullish)', fontWeight: 700, letterSpacing: '0.03em' }}>
           ZERO_FABRICATION_POLICY_ACTIVE • EVIDENCE_PROVENANCE_ENFORCED
         </span>
       </div>
 
-      {/* Right items: Quality Gate & Memory state */}
+      {/* Right items: Quality Gate & Data Freshness */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <span style={{ color: 'var(--text-muted)' }}>DATA_QUALITY_GATE:</span>
           {systemStatus.dataQualityStatus === 'PASSED' ? (
-            <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <CheckCircle size={10} /> PASSED
+            <span style={{ color: 'var(--color-bullish)', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+              <CheckCircle size={11} /> PASSED
             </span>
           ) : (
-            <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <AlertCircle size={10} /> {systemStatus.dataQualityStatus}
+            <span style={{ color: 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+              <AlertCircle size={11} /> {systemStatus.dataQualityStatus}
             </span>
           )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <span style={{ color: 'var(--text-muted)' }}>MEMORY:</span>
-          <span style={{ color: 'var(--text-secondary)' }}>{systemStatus.memoryState}</span>
+          <span style={{ color: 'var(--text-muted)' }}>PERSISTENCE:</span>
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>IMMUTABLE_HASH_CHAINED</span>
         </div>
       </div>
     </footer>

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Award,
   Compass,
+  History,
 } from 'lucide-react';
 import { TerminalRoute } from '../../types';
 
@@ -22,43 +23,44 @@ interface NavItemDef {
   id: TerminalRoute;
   label: string;
   icon: React.ReactNode;
-  phase: number;
+  category: string;
 }
 
 const NAV_SECTIONS: { title: string; items: NavItemDef[] }[] = [
   {
     title: 'Research Workspace',
     items: [
-      { id: 'overview', label: 'Terminal Overview', icon: <LayoutDashboard size={14} />, phase: 1 },
-      { id: 'ingestion', label: 'Document Ingestion', icon: <UploadCloud size={14} />, phase: 3 },
-      { id: 'extraction', label: 'Extraction Review', icon: <FileSearch size={14} />, phase: 4 },
+      { id: 'overview', label: 'Terminal Overview', icon: <LayoutDashboard size={15} />, category: 'Overview' },
+      { id: 'evidence', label: 'Evidence Explorer', icon: <Compass size={15} />, category: 'Workspace' },
+      { id: 'ingestion', label: 'Document Ingestion', icon: <UploadCloud size={15} />, category: 'Sources' },
+      { id: 'extraction', label: 'Extraction Review', icon: <FileSearch size={15} />, category: 'Facts' },
     ],
   },
   {
-    title: 'Analysis Engines',
+    title: 'Financial & Forensic Analysis',
     items: [
-      { id: 'fundamentals', label: 'Fundamental Health', icon: <TrendingUp size={14} />, phase: 6 },
-      { id: 'forensic', label: 'Forensic Accounting', icon: <AlertOctagon size={14} />, phase: 7 },
-      { id: 'management', label: 'Management DNA', icon: <Users size={14} />, phase: 8 },
-      { id: 'valuation', label: 'Sector Valuation', icon: <Calculator size={14} />, phase: 9 },
-      { id: 'technical', label: 'Technical Structure', icon: <LineChart size={14} />, phase: 10 },
+      { id: 'fundamentals', label: 'Fundamental Health', icon: <TrendingUp size={15} />, category: 'Financials' },
+      { id: 'forensic', label: 'Forensic Accounting', icon: <AlertOctagon size={15} />, category: 'Governance' },
+      { id: 'management', label: 'Management DNA', icon: <Users size={15} />, category: 'Credibility' },
+      { id: 'valuation', label: 'Sector Valuation', icon: <Calculator size={15} />, category: 'Multiples' },
+      { id: 'technical', label: 'Technical Structure', icon: <LineChart size={15} />, category: 'Technicals' },
     ],
   },
   {
-    title: 'Market & Scenarios',
+    title: 'Market Intelligence & Scenarios',
     items: [
-      { id: 'industry', label: 'Industry & Peer Moat', icon: <Layers size={14} />, phase: 8 },
-      { id: 'news', label: 'News Intelligence', icon: <Newspaper size={14} />, phase: 11 },
-      { id: 'catalysts-risks', label: 'Catalysts & Risks', icon: <Flame size={14} />, phase: 12 },
-      { id: 'scenarios', label: 'Scenario Modeling', icon: <GitFork size={14} />, phase: 13 },
+      { id: 'industry', label: 'Industry & Peer Moat', icon: <Layers size={15} />, category: 'Structure' },
+      { id: 'news', label: 'News Intelligence', icon: <Newspaper size={15} />, category: 'Events' },
+      { id: 'catalysts-risks', label: 'Catalysts & Risks', icon: <Flame size={15} />, category: 'Asymmetry' },
+      { id: 'scenarios', label: 'Scenario Modeling', icon: <GitFork size={15} />, category: 'Forecasts' },
     ],
   },
   {
-    title: 'Synthesis & Audit',
+    title: 'Synthesis & Quality Audit',
     items: [
-      { id: 'quality-gate', label: 'Data Quality Gate', icon: <CheckCircle2 size={14} />, phase: 13 },
-      { id: 'verdict', label: 'Investment Verdict', icon: <Award size={14} />, phase: 14 },
-      { id: 'evidence', label: 'Evidence Explorer', icon: <Compass size={14} />, phase: 15 },
+      { id: 'quality-gate', label: 'Data Quality Gate', icon: <CheckCircle2 size={15} />, category: 'Integrity' },
+      { id: 'verdict', label: 'Investment Verdict', icon: <Award size={15} />, category: 'Decision' },
+      { id: 'history', label: 'Research History', icon: <History size={15} />, category: 'Audit Ledger' },
     ],
   },
 ];
@@ -83,28 +85,41 @@ export const SideNav: React.FC<SideNavProps> = ({ activeRoute, onRouteChange }) 
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => onRouteChange(item.id)}
                 style={{
-                  width: '100%',
-                  background: 'none',
+                  width: 'calc(100% - 8px)',
+                  background: isActive ? 'var(--brand-blue-light)' : 'transparent',
                   border: 'none',
+                  borderLeft: isActive ? '3px solid var(--brand-blue)' : '3px solid transparent',
                   textAlign: 'left',
                   fontFamily: 'inherit',
+                  color: isActive ? 'var(--brand-blue)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px 12px',
+                  margin: '1px 4px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s ease',
                 }}
               >
-                <span style={{ color: isActive ? '#38bdf8' : 'var(--text-muted)' }}>
+                <span style={{ color: isActive ? 'var(--brand-blue)' : 'var(--text-muted)', display: 'inline-flex' }}>
                   {item.icon}
                 </span>
-                <span style={{ flex: 1 }}>{item.label}</span>
+                <span style={{ flex: 1, fontSize: '12px' }}>{item.label}</span>
                 <span
                   style={{
-                    fontSize: '9px',
+                    fontSize: '10px',
                     fontFamily: 'var(--font-mono)',
-                    color: isActive ? '#38bdf8' : 'var(--text-dim)',
-                    background: 'var(--bg-surface-raised)',
-                    padding: '1px 4px',
-                    borderRadius: '2px',
+                    color: isActive ? 'var(--brand-blue)' : 'var(--text-dim)',
+                    background: isActive ? '#ffffff' : '#f1f5f9',
+                    border: '1px solid',
+                    borderColor: isActive ? 'var(--brand-blue-subtle)' : 'var(--border-subtle)',
+                    padding: '1px 5px',
+                    borderRadius: '3px',
                   }}
                 >
-                  P{item.phase}
+                  {item.category}
                 </span>
               </button>
             );

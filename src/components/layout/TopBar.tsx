@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ShieldCheck, Database, Clock, Plus } from 'lucide-react';
+import { Activity, ShieldCheck, Clock, Plus, BarChart3 } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { SystemStatus } from '../../types';
@@ -41,32 +41,29 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header className="terminal-header" id="terminal-topbar">
-      {/* Brand / Title */}
+      {/* Brand & Platform Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
-              width: '18px',
-              height: '18px',
-              background: '#0284c7',
-              borderRadius: '3px',
+              width: '24px',
+              height: '24px',
+              background: 'var(--brand-blue)',
+              borderRadius: '5px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff',
-              fontWeight: 800,
-              fontSize: '11px',
-              fontFamily: 'var(--font-mono)',
             }}
           >
-            EQ
+            <BarChart3 size={15} />
           </div>
           <span
             style={{
-              fontWeight: 700,
-              fontSize: '12px',
-              letterSpacing: '0.06em',
-              color: 'var(--text-primary)',
+              fontWeight: 800,
+              fontSize: '13px',
+              letterSpacing: '0.04em',
+              color: 'var(--brand-navy)',
               textTransform: 'uppercase',
             }}
           >
@@ -80,7 +77,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       {/* Active Project Switcher & Company Context */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {activeProject ? (
           <ProjectSwitcher
             activeProject={activeProject}
@@ -91,7 +88,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Button
             size="sm"
             variant="primary"
-            icon={<Plus size={11} />}
+            icon={<Plus size={12} />}
             onClick={onOpenNewProjectModal}
           >
             Create Research Project
@@ -100,16 +97,17 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         <Button
           size="sm"
-          icon={<Plus size={11} />}
+          variant="secondary"
+          icon={<Plus size={12} />}
           onClick={onOpenNewProjectModal}
           id="topbar-new-project-btn"
         >
-          New Company (P2)
+          New Company
         </Button>
       </div>
 
-      {/* Right Controls: Market Time & Engine Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      {/* Right Controls: Market Time & Engine Health */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div
           style={{
             display: 'flex',
@@ -121,25 +119,25 @@ export const TopBar: React.FC<TopBarProps> = ({
           }}
         >
           <Clock size={12} color="var(--text-muted)" />
-          <span className="tabular-nums">{currentTime}</span>
+          <span className="tabular-nums" style={{ fontWeight: 600 }}>{currentTime}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Activity size={12} color={systemStatus.engineStatus === 'READY' ? '#10b981' : '#f59e0b'} />
+          <Activity size={13} color={systemStatus.engineStatus === 'READY' ? 'var(--color-bullish)' : 'var(--color-warning)'} />
           <span
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '11px',
-              color: systemStatus.engineStatus === 'READY' ? '#10b981' : '#f59e0b',
-              fontWeight: 600,
+              color: systemStatus.engineStatus === 'READY' ? 'var(--color-bullish)' : 'var(--color-warning)',
+              fontWeight: 700,
             }}
           >
-            {systemStatus.engineStatus}
+            ENGINE {systemStatus.engineStatus}
           </span>
         </div>
 
-        <Badge variant="neutral" icon={<Database size={10} />}>
-          Phase 2 Active
+        <Badge variant="bullish">
+          OPERATIONAL
         </Badge>
       </div>
     </header>

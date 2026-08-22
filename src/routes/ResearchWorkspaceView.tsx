@@ -117,37 +117,44 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
     : null;
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px 20px', color: '#f8fafc' }}>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '16px 8px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Workspace Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      <div
+        className="terminal-card"
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}
+      >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Briefcase size={20} color="#38bdf8" />
-            <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Phase 15/16 — Production Research Workspace & Live Reliability Engine
-            </h1>
-          </div>
-          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-            Active Company: <strong>{project.company.displayName}</strong> (<code>{project.company.symbol}</code>) | Sector: {project.company.sector}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '6px',
+                background: 'var(--brand-blue-light)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--brand-blue)',
+              }}
+            >
+              <Briefcase size={18} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--brand-navy)', letterSpacing: '-0.01em' }}>
+                Production Research Workspace & Evidence Explorer
+              </h1>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Active Company: <strong style={{ color: 'var(--brand-navy)' }}>{project.company.displayName}</strong> (<code>{project.company.symbol}</code>) • Sector: {project.company.sector}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={handleCompareWithPreviousSnapshot}
-            style={{
-              background: '#1e293b',
-              color: '#38bdf8',
-              border: '1px solid #334155',
-              borderRadius: '4px',
-              padding: '6px 14px',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className="terminal-btn terminal-btn-secondary"
+            style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <History size={13} />
             Compare Snapshot Deltas
