@@ -1,5 +1,6 @@
 export type TerminalRoute =
   | 'overview'
+  | 'market-intelligence'
   | 'ingestion'
   | 'extraction'
   | 'fundamentals'

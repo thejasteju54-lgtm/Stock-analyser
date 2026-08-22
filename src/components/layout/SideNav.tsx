@@ -8,6 +8,7 @@ import {
   Users,
   Calculator,
   LineChart,
+  Globe,
   Layers,
   Newspaper,
   Flame,
@@ -31,6 +32,7 @@ const NAV_SECTIONS: { title: string; items: NavItemDef[] }[] = [
     title: 'Research Workspace',
     items: [
       { id: 'overview', label: 'Terminal Overview', icon: <LayoutDashboard size={15} />, category: 'Overview' },
+      { id: 'market-intelligence', label: 'Daily Market Intelligence', icon: <Globe size={15} />, category: 'Scanner' },
       { id: 'evidence', label: 'Evidence Explorer', icon: <Compass size={15} />, category: 'Workspace' },
       { id: 'ingestion', label: 'Document Ingestion', icon: <UploadCloud size={15} />, category: 'Sources' },
       { id: 'extraction', label: 'Extraction Review', icon: <FileSearch size={15} />, category: 'Facts' },

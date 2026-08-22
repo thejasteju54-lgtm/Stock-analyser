@@ -13,11 +13,19 @@ import { GuidedTourOverlay } from './components/guided/GuidedTourOverlay';
 import { InstitutionalRulesModal } from './components/guided/InstitutionalRulesModal';
 import { ContextualHelpModal } from './components/guided/ContextualHelpModal';
 import { AutomatedResearchModal } from './components/automated/AutomatedResearchModal';
+import { MarketIntelligenceView } from './routes/MarketIntelligenceView';
+import { AutomatedResearchOrchestrator } from './domain/dataAcquisition/AutomatedResearchOrchestrator';
 
 const ROUTE_DEFINITIONS: Record<
   Exclude<TerminalRoute, 'overview'>,
   { title: string; phaseNumber: string; description: string; requiredEngine: string }
 > = {
+  'market-intelligence': {
+    title: 'Daily Market Intelligence & Opportunity Scanner',
+    phaseNumber: 'PHASE 22',
+    description: 'Multi-factor opportunity scanning, volume shock detection, sector heatmap, and daily top 10 ranking.',
+    requiredEngine: 'DailyMarketScanner (Deterministic Multi-Factor Engine)',
+  },
   ingestion: {
     title: 'Document Ingestion Pipeline',
     phaseNumber: 'PHASE 3',
@@ -156,6 +164,16 @@ const AppContent: React.FC = () => {
     setActiveProject(updatedProject);
   };
 
+  const handleAnalyzeFromMarketIntelligence = async (symbol: string) => {
+    try {
+      const result = await AutomatedResearchOrchestrator.executeAutomatedResearch(symbol, 'DEEP_RESEARCH');
+      setActiveProject(result.project);
+      setActiveRoute('evidence');
+    } catch (err) {
+      console.error('Failed to analyze stock from market intelligence:', err);
+    }
+  };
+
   return (
     <div className="terminal-layout" id="terminal-app-root">
       {/* Top Header */}
@@ -179,6 +197,10 @@ const AppContent: React.FC = () => {
               onNavigate={handleRouteChange}
               onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
               onProjectChange={handleProjectChange}
+            />
+          ) : activeRoute === 'market-intelligence' ? (
+            <MarketIntelligenceView
+              onAnalyzeStock={handleAnalyzeFromMarketIntelligence}
             />
           ) : activeRoute === 'ingestion' ? (
             <IngestionView

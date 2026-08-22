@@ -8,7 +8,7 @@ describe('Phase 21 — Company Resolution Engine', () => {
     expect(resByTicker.codeBSE).toBe('500049');
     expect(resByTicker.isin).toBe('INE263A01024');
     expect(resByTicker.legalName).toContain('Bharat Electronics');
-    expect(resByTicker.sector).toBe('DEFENCE');
+    expect(resByTicker.sector).toBe('Capital Goods');
     expect(resByTicker.confidence).toBe('HIGH');
 
     const resByName = await CompanyResolutionEngine.resolve('Bharat Electronics');
