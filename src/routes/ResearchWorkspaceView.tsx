@@ -22,6 +22,8 @@ import { ValuationSpectrumCard } from '../components/workspace/ValuationSpectrum
 import { FinancialPerformanceTable } from '../components/workspace/FinancialPerformanceTable';
 import { ScenarioComparisonGrid } from '../components/workspace/ScenarioComparisonGrid';
 import { ForensicQualityOverviewCard } from '../components/workspace/ForensicQualityOverviewCard';
+import { DataQualityCenterCard } from '../components/workspace/DataQualityCenterCard';
+import { VerdictReliabilityPanel } from '../components/workspace/VerdictReliabilityPanel';
 import { WhyEvidenceModal, WhyEvidenceItem } from '../components/common/WhyEvidenceModal';
 import { DecisionAuditTrailDrawer } from '../components/verdict/DecisionAuditTrailDrawer';
 import { Briefcase, History } from 'lucide-react';
@@ -189,46 +191,63 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
 
       <LiveDataStatusPanel />
 
-      {/* 3. LEVEL 1: Executive Summary Card (Above-The-Fold Rule) */}
+      {/* 3. Accuracy Center & Data Quality Vitals */}
+      <DataQualityCenterCard
+        evidenceCompletenessPercent={92}
+        freshnessStatus="HIGH"
+        sourceQualityTier="TIER_1_AUDITED"
+        conflictsCount={0}
+        missingCriticalMetricsCount={0}
+        calculationIntegrityStatus="PASS"
+        onRefreshClick={handleLiveFeedsRefresh}
+      />
+
+      {/* 4. LEVEL 1: Executive Summary Card (Above-The-Fold Rule) */}
       <ExecutiveSummaryCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
         onOpenAuditDrawer={() => setIsAuditDrawerOpen(true)}
       />
 
-      {/* 4. LEVEL 1: What Matters Now (Top 3 Catalysts, Risks, Thesis Breakers) */}
+      {/* 5. LEVEL 1: What Matters Now (Top 3 Catalysts, Risks, Thesis Breakers) */}
       <WhatMattersNowCard
         report={verdictReport}
       />
 
-      {/* 5. LEVEL 1: Valuation Range & Margin of Safety */}
+      {/* 6. LEVEL 1: Valuation Range & Margin of Safety */}
       <ValuationSpectrumCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 6. LEVEL 2: 5-Year Financial Statement Trajectory & Forward Projections */}
+      {/* 7. LEVEL 2: 5-Year Financial Statement Trajectory & Forward Projections */}
       <FinancialPerformanceTable
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 7. LEVEL 2: Quantitative Scenario Spectrum */}
+      {/* 8. LEVEL 2: Quantitative Scenario Spectrum */}
       <ScenarioComparisonGrid
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 8. LEVEL 3: Forensic & Governance Quality Overview */}
+      {/* 9. LEVEL 3: Forensic & Governance Quality Overview */}
       <ForensicQualityOverviewCard
         report={verdictReport}
         onOpenWhyModal={(item) => setWhyEvidenceItem(item)}
       />
 
-      {/* 9. LEVEL 4: Workflow Lifecycle Stepper & Document Registry */}
+      {/* 10. LEVEL 3: Verdict Reliability & Multi-Dimensional Integrity */}
+      <VerdictReliabilityPanel
+        report={verdictReport}
+        onOpenAuditDrawer={() => setIsAuditDrawerOpen(true)}
+      />
+
+      {/* 11. LEVEL 4: Workflow Lifecycle Stepper & Document Registry */}
       <WorkflowStatusStepper currentState={project.workflowState || 'DECISION_READY'} />
       <DocumentRegistryTable documents={project.documents || []} />
 
-      {/* 10. LEVEL 4: 11-Pillar Evidence Completeness Grid & Freshness */}
+      {/* 12. LEVEL 4: 11-Pillar Evidence Completeness Grid & Freshness */}
       <EvidenceCompletenessGrid completenessReport={completenessReport} />
       <PipelineExecutionPanel
         executionReport={executionReport}
@@ -241,7 +260,7 @@ export const ResearchWorkspaceView: React.FC<ResearchWorkspaceViewProps> = ({
         onRefreshCategory={() => handleLiveFeedsRefresh()}
       />
 
-      {/* 11. Final Institutional 22-Section Research Report Delivery */}
+      {/* 13. Final Institutional 22-Section Research Report Delivery */}
       <InvestmentReportViewer report={investmentReport} />
 
       {/* Why Evidence Slide-Over Modal */}

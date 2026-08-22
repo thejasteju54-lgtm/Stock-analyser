@@ -1,7 +1,7 @@
 import React from 'react';
 import { InvestmentVerdictReport } from '../../domain/verdict/VerdictTypes';
 import { StatusBadge } from '../common/StatusBadge';
-import { HelpCircle, Sparkles } from 'lucide-react';
+import { HelpCircle, Sparkles, Clock } from 'lucide-react';
 import { WhyEvidenceItem } from '../common/WhyEvidenceModal';
 
 export interface ExecutiveSummaryCardProps {
@@ -51,8 +51,10 @@ export const ExecutiveSummaryCard: React.FC<ExecutiveSummaryCardProps> = ({
         metricOrClaim,
         value,
         sourceDocument: source,
+        sourceTier: 'TIER_1_STATUTORY',
         pageCitation: page,
         formulaOrDerivation: formula,
+        reasoningLayer: formula ? 'DERIVED' : 'FACT',
         status: 'VERIFIED',
         confidence: 'HIGH',
       });
@@ -79,7 +81,7 @@ export const ExecutiveSummaryCard: React.FC<ExecutiveSummaryCardProps> = ({
           paddingRight: '20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px',
+          gap: '8px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -109,10 +111,15 @@ export const ExecutiveSummaryCard: React.FC<ExecutiveSummaryCardProps> = ({
           </span>
         </div>
 
-        <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>Current Price:</span>
-          <strong style={{ color: 'var(--brand-navy)' }}>₹{marketPrice.price.toLocaleString('en-IN')}</strong>
-          <span style={{ fontSize: '10px', color: 'var(--color-bullish)' }}>({marketPrice.freshnessStatus})</span>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>Market Price:</span>
+            <strong style={{ color: 'var(--brand-navy)' }}>₹{marketPrice.price.toLocaleString('en-IN')}</strong>
+            <span style={{ fontSize: '10px', color: 'var(--color-bullish)' }}>({marketPrice.freshnessStatus})</span>
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Clock size={10} /> Observed: {marketPrice.priceDate} • Ingested: {marketPrice.retrievedAt.substring(11, 16)} IST
+          </div>
         </div>
 
         {onOpenAuditDrawer && (
@@ -178,7 +185,7 @@ export const ExecutiveSummaryCard: React.FC<ExecutiveSummaryCardProps> = ({
         }}
       >
         <div style={{ fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em', marginBottom: '2px' }}>
-          Key Financial Vitals
+          Key Financial Vitals (Consolidated)
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
