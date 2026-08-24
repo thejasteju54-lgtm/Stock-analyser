@@ -192,7 +192,7 @@ export const EvidenceExtractionView: React.FC = () => {
       setIsExtracting(false);
       setNotification({
         type: 'success',
-        text: `Successfully extracted ${extractionResult.factsCount} financial facts and ${extractionResult.claimsCount} management claims across 2 consecutive financial years.`,
+        text: `Successfully extracted ${extractionResult.facts.length} financial facts and ${extractionResult.managementClaims.length} management claims across 2 consecutive financial years.`,
       });
 
       setTimeout(() => setNotification(null), 5000);

@@ -260,7 +260,16 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
   },
   Defence: {
     sector: 'Defence',
-    subsectors: ['Aerospace & Avionics', 'Naval & Shipbuilders', 'Land Systems & Artillery', 'Defence Electronics & Radar'],
+    subsectors: [
+      'Aerospace & Avionics',
+      'Naval & Shipbuilders',
+      'Land Systems & Artillery',
+      'Defence Electronics & Radar',
+      'Defence Electronics & Radars',
+      'Defence Electronics',
+      'Aerospace & Defence',
+      'General',
+    ],
     businessModel: 'NON_FINANCIAL_OPERATING',
     applicableMetrics: ['ORDER_BOOK_TO_SALES', 'INDIGENISATION_LEVEL', 'EXPORT_ORDER_SHARE', 'EBITDA_MARGIN', 'WORKING_CAPITAL_DAYS', 'ROCE'],
     applicableForensicModels: ['BENEISH_M_SCORE', 'ALTMAN_Z_SCORE', 'CFO_PAT_DIVERGENCE', 'WORKING_CAPITAL_CYCLE'],
@@ -321,6 +330,20 @@ export const SECTOR_TAXONOMY_REGISTRY: Record<string, SectorTaxonomyDefinition> 
     applicableValuationModels: ['SOTP', 'NAV', 'EV_EBITDA', 'PE'],
     description: 'Multi-business conglomerates requiring sum-of-the-parts (SOTP) evaluation and holding company discount.',
   },
+};
+
+// Aliases for common institutional sector naming variations
+SECTOR_TAXONOMY_REGISTRY['Defence & Aerospace'] = {
+  ...SECTOR_TAXONOMY_REGISTRY['Defence'],
+  sector: 'Defence & Aerospace',
+};
+SECTOR_TAXONOMY_REGISTRY['Information Technology'] = {
+  ...SECTOR_TAXONOMY_REGISTRY['IT Services'],
+  sector: 'Information Technology',
+};
+SECTOR_TAXONOMY_REGISTRY['Pharmaceuticals'] = {
+  ...SECTOR_TAXONOMY_REGISTRY['Pharma'],
+  sector: 'Pharmaceuticals',
 };
 
 export function getSectorDefinition(sectorName: string): SectorTaxonomyDefinition | undefined {

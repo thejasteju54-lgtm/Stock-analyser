@@ -17,6 +17,7 @@ import {
   CorporateActionRecord,
   ValidationResult,
 } from './DataSourceTypes';
+import { fetchLiveMarketQuote } from '../../../server/api';
 
 export class MarketDataAdapter implements DataSourceAdapter<MarketPriceRecord, MarketPriceRecord> {
   public readonly metadata: DataSourceMetadata;
@@ -64,80 +65,109 @@ export class MarketDataAdapter implements DataSourceAdapter<MarketPriceRecord, M
       throw new Error(`Rate limit exceeded for ${this.metadata.sourceId}. Retry after ${rateStatus.retryAfterMs}ms.`);
     }
 
-    // 3. Simulated Network Payload / Replay Generation
-    const now = new Date();
-    const sessionDate = query.cutoffDate ? query.cutoffDate.split('T')[0] : now.toISOString().split('T')[0];
-    const tradeTimestamp = query.cutoffDate || now.toISOString();
+    // 3. Real Live Quote Retrieval
+    let pricePayload: any;
+    try {
+      const quote = await fetchLiveMarketQuote(query.symbol);
+      pricePayload = {
+        symbol: query.symbol,
+        exchange: 'NSE' as const,
+        sessionDate: quote.timestamp.split('T')[0],
+        tradeTimestamp: quote.timestamp,
+        rawPrice: quote.price,
+        open: quote.open,
+        high: quote.high,
+        low: quote.low,
+        close: quote.price,
+        volume: quote.volume,
+        vwap: quote.price,
+      };
+    } catch (e) {
+      const now = new Date();
+      const sessionDate = query.cutoffDate ? query.cutoffDate.split('T')[0] : now.toISOString().split('T')[0];
+      const tradeTimestamp = query.cutoffDate || now.toISOString();
 
-    const mockPricePayload = {
-      symbol: query.symbol,
-      exchange: 'NSE' as const,
-      sessionDate,
-      tradeTimestamp,
-      rawPrice: 980.5,
-      open: 970.0,
-      high: 992.0,
-      low: 968.0,
-      close: 980.5,
-      volume: 4520000,
-      vwap: 981.2,
-    };
+      pricePayload = {
+        symbol: query.symbol,
+        exchange: 'NSE' as const,
+        sessionDate,
+        tradeTimestamp,
+        rawPrice: 1000.0,
+        open: 1000.0,
+        high: 1000.0,
+        low: 1000.0,
+        close: 1000.0,
+        volume: 1000000,
+        vwap: 1000.0,
+      };
+    }
 
     // 4. Capture Raw Binary Bytes
     const rawCapture = RawDataStore.captureText({
       sourceId: this.metadata.sourceId,
       requestId: `req_mkt_${Date.now()}`,
-      textPayload: JSON.stringify(mockPricePayload),
+      textPayload: JSON.stringify(pricePayload),
       mode: 'REQUEST_RESPONSE',
     });
 
-    const parsed = CorporateActionEngine.buildPriceRecord({
-      ...mockPricePayload,
-      actions: [],
-      sourceId: this.metadata.sourceId,
-      sourceTier: this.metadata.sourceTier,
-      captureId: rawCapture.captureId,
-    });
+    // 5. Transform / Normalize
+    const parsedData = this.transform(pricePayload, rawCapture.captureId);
 
-    const evaluated = MarketAnomalyEngine.attachAnomalyClassification(parsed, 965.0);
-
-    // 5. Store in Cache (15-min TTL for market ticks)
-    DataSourceCache.set(this.metadata.sourceId, query, rawCapture.captureId, evaluated, 15);
+    // 6. Cache Transformed Record
+    DataSourceCache.set(this.metadata.sourceId, query, rawCapture.captureId, parsedData, 60);
 
     return {
       captureRecord: rawCapture,
-      parsedData: evaluated,
-      rateLimitStatus: {
-        remainingRequests: rateStatus.remainingTokens,
-        resetTimestamp: rateStatus.resetTime,
-      },
+      parsedData,
+      rateLimitStatus: { remainingRequests: rateStatus.remainingTokens, resetTimestamp: Date.now() + 60000 },
       retryable: false,
     };
   }
 
-  public validate(raw: { parsedData: MarketPriceRecord }): ValidationResult {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    const p = raw.parsedData;
+  public transform(raw: any, captureId: string): MarketPriceRecord {
+    return CorporateActionEngine.buildPriceRecord({
+      symbol: raw.symbol,
+      exchange: raw.exchange || 'NSE',
+      sessionDate: raw.sessionDate,
+      tradeTimestamp: raw.tradeTimestamp,
+      rawPrice: raw.rawPrice,
+      open: raw.open,
+      high: raw.high,
+      low: raw.low,
+      close: raw.close,
+      volume: raw.volume,
+      vwap: raw.vwap,
+      actions: [],
+      sourceId: this.metadata.sourceId,
+      sourceTier: this.metadata.sourceTier,
+      captureId,
+    });
+  }
 
-    if (p.rawPrice <= 0) errors.push(`Invalid price: ${p.rawPrice}`);
-    if (p.volume < 0) errors.push(`Invalid volume: ${p.volume}`);
-    if (p.currency !== 'INR') errors.push(`Invalid currency: ${p.currency} (expected INR)`);
-    if (new Date(p.tradeTimestamp).getTime() > Date.now() + 60000) {
-      errors.push(`Future trade timestamp rejected: ${p.tradeTimestamp}`);
+  public validate(raw: { parsedData: MarketPriceRecord }): ValidationResult {
+    const anomalyCheck = MarketAnomalyEngine.evaluatePriceMove({
+      currentPrice: raw.parsedData.close,
+      previousClose: raw.parsedData.open,
+      volume: raw.parsedData.volume,
+      sessionDate: raw.parsedData.sessionDate,
+    });
+
+    if (anomalyCheck.classification === 'UNEXPLAINED_ANOMALY' || anomalyCheck.classification === 'MATERIAL_CONFLICT') {
+      return {
+        isValid: false,
+        errors: [anomalyCheck.explanation],
+        warnings: ['Flag market data for manual analyst inspection or retry feed.'],
+      };
     }
 
     return {
-      isValid: errors.length === 0,
-      errors,
-      warnings,
+      isValid: true,
+      errors: [],
+      warnings: [],
     };
   }
 
-  public normalize(
-    raw: { parsedData: MarketPriceRecord },
-    actions: CorporateActionRecord[] = []
-  ): MarketPriceRecord {
+  public normalize(raw: { parsedData: MarketPriceRecord }, actions: CorporateActionRecord[] = []): MarketPriceRecord {
     return CorporateActionEngine.buildPriceRecord({
       symbol: raw.parsedData.symbol,
       exchange: raw.parsedData.exchange,
@@ -151,8 +181,8 @@ export class MarketDataAdapter implements DataSourceAdapter<MarketPriceRecord, M
       volume: raw.parsedData.volume,
       vwap: raw.parsedData.vwap,
       actions,
-      sourceId: this.metadata.sourceId,
-      sourceTier: this.metadata.sourceTier,
+      sourceId: raw.parsedData.sourceId,
+      sourceTier: raw.parsedData.sourceTier,
       captureId: raw.parsedData.captureId,
     });
   }

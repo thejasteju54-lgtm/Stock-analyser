@@ -1,46 +1,59 @@
-import { CompanyResolutionResult, ResearchSourceAdapter } from '../../infrastructure/researchSources/SourceAdapterTypes';
-import { ScreenerAdapter } from '../../infrastructure/researchSources/screener/ScreenerAdapter';
-import { OfficialExchangeAdapter } from '../../infrastructure/researchSources/official/OfficialExchangeAdapter';
+/**
+ * CompanyResolutionEngine.ts
+ * Enterprise Security Master & Canonical Company Resolution Engine
+ * Resolves Indian equities to canonical ISIN, NSE ticker, BSE code, sector, and industry.
+ */
+
+import { CompanyResolutionResult } from '../../infrastructure/researchSources/SourceAdapterTypes';
+import { resolveSecurity } from '../../../server/api';
 
 export class CompanyResolutionEngine {
-  private static adapters: ResearchSourceAdapter[] = [
-    new OfficialExchangeAdapter(),
-    new ScreenerAdapter(),
-  ];
-
   static async resolve(query: string): Promise<CompanyResolutionResult> {
     const cleanQuery = query.trim();
     if (!cleanQuery) {
       throw new Error('Company query cannot be empty');
     }
 
-    // Try Tier 1 Official Adapter first
-    for (const adapter of this.adapters) {
+    if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
       try {
-        const result = await adapter.resolveCompany(cleanQuery);
-        if (result.status === 'SUCCESS' && result.data) {
-          return result.data;
+        const resp = await fetch(`/api/company/resolve?q=${encodeURIComponent(cleanQuery)}`);
+        const json = await resp.json();
+        if (json.status === 'SUCCESS' && json.data) {
+          const d = json.data;
+          return {
+            canonicalCompanyId: d.canonicalCompanyId,
+            legalName: d.legalName,
+            displayName: d.displayName,
+            symbolNSE: d.symbolNSE,
+            codeBSE: d.codeBSE,
+            isin: d.isin,
+            primaryExchange: d.primaryExchange,
+            sector: d.sector,
+            industry: d.industry,
+            entityType: (d.entityType === 'BANK' ? 'BANK' : 'OPERATING_COMPANY') as any,
+            aliases: [d.displayName, d.symbolNSE, d.legalName],
+            confidence: d.confidence,
+          };
         }
-      } catch (err) {
-        console.warn(`Adapter ${adapter.adapterId} resolution failed:`, err);
+      } catch (e) {
+        // Fallback to in-process security resolver
       }
     }
 
-    // Fallback: create a deterministic canonical company profile
-    const upper = cleanQuery.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const sec = resolveSecurity(cleanQuery);
     return {
-      canonicalCompanyId: `comp_${upper.toLowerCase()}`,
-      legalName: `${cleanQuery} Limited`,
-      displayName: cleanQuery,
-      symbolNSE: upper,
-      codeBSE: '000000',
-      isin: `INE${upper}01`,
-      primaryExchange: 'NSE',
-      sector: 'Capital Goods',
-      industry: 'Heavy Electrical Equipment',
-      entityType: 'OPERATING_COMPANY',
-      aliases: [cleanQuery, upper],
-      confidence: 'MEDIUM',
+      canonicalCompanyId: sec.canonicalCompanyId,
+      legalName: sec.legalName,
+      displayName: sec.displayName,
+      symbolNSE: sec.symbolNSE,
+      codeBSE: sec.codeBSE,
+      isin: sec.isin,
+      primaryExchange: sec.primaryExchange,
+      sector: sec.sector,
+      industry: sec.industry,
+      entityType: (sec.entityType === 'BANK' ? 'BANK' : 'OPERATING_COMPANY') as any,
+      aliases: [sec.displayName, sec.symbolNSE, sec.legalName],
+      confidence: sec.confidence,
     };
   }
 }

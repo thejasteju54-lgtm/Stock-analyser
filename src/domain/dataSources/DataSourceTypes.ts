@@ -80,7 +80,7 @@ export interface DataFetchQuery {
   symbol: string;
   isin?: string;
   cin?: string;
-  category: DataSourceCategory;
+  category?: DataSourceCategory;
   periodStart?: string;
   periodEnd?: string;
   cursor?: string;

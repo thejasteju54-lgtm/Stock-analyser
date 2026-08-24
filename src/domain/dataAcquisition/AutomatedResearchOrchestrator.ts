@@ -80,9 +80,9 @@ export class AutomatedResearchOrchestrator {
       this.official.discoverDocuments(resolvedCompany.symbolNSE),
       this.tickertape.fetchMarketData(resolvedCompany.symbolNSE),
       this.screener.fetchFinancials(resolvedCompany.symbolNSE, 'CONSOLIDATED'),
-      this.moneycontrol.fetchFinancials(resolvedCompany.symbolNSE),
+      this.moneycontrol.fetchFinancials(),
       this.newsAdapter.fetchNews(resolvedCompany.symbolNSE),
-      this.moneycontrol.fetchManagementUpdates(resolvedCompany.symbolNSE),
+      this.moneycontrol.fetchManagementUpdates(),
     ]);
     notify(2, 'Sources Discovered', `5 endpoints queried successfully (${marketData.data?.price ? `Price: ₹${marketData.data.price}` : ''})`, 'COMPLETED');
 

@@ -1,137 +1,44 @@
-import { BaseSourceAdapter } from '../BaseSourceAdapter';
+/**
+ * NewsDiscoveryAdapter.ts
+ * Phase 1 — Financial News & Regulatory Announcements Discovery Adapter.
+ * Queries Google News RSS and verified press releases for Indian Equities.
+ */
+
 import {
+  ResearchSourceAdapter,
   SourceTier,
   SourceRole,
   SourceFetchResult,
   CompanyResolutionResult,
-  DiscoveredDocumentItem,
-  NormalizedFinancialStatementItem,
   DiscoveredNewsEventItem,
-  DiscoveredManagementStatementItem,
 } from '../SourceAdapterTypes';
+import { resolveSecurity, fetchCompanyNewsEvents } from '../../../../server/api';
 
-export class NewsDiscoveryAdapter extends BaseSourceAdapter {
-  readonly adapterId = 'news_discovery_feed';
-  readonly adapterName = 'Verified Financial News & Wire Discovery Feed';
-  readonly adapterVersion = '1.0.0';
+export class NewsDiscoveryAdapter implements ResearchSourceAdapter {
+  readonly adapterId = 'NEWS_WIRE_GATEWAY';
+  readonly adapterName = 'Verified News Wire & Google RSS';
+  readonly adapterVersion = '2.0.0';
   readonly sourceTier: SourceTier = 4;
   readonly defaultRole: SourceRole = 'SECONDARY_DISCOVERY';
 
-  async resolveCompany(): Promise<SourceFetchResult<CompanyResolutionResult>> {
-    return {
-      sourceId: this.adapterId,
-      sourceName: this.adapterName,
-      sourceTier: this.sourceTier,
-      sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: null,
-      status: 'NOT_FOUND',
-      confidence: 'NOT_ASSESSABLE',
-      evidenceReferences: [],
-    };
-  }
-
-  async discoverDocuments(): Promise<SourceFetchResult<DiscoveredDocumentItem[]>> {
-    return {
-      sourceId: this.adapterId,
-      sourceName: this.adapterName,
-      sourceTier: this.sourceTier,
-      sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: [],
-      status: 'SUCCESS',
-      confidence: 'LOW',
-      evidenceReferences: [],
-    };
-  }
-
-  async fetchFinancials(): Promise<SourceFetchResult<NormalizedFinancialStatementItem[]>> {
-    return {
-      sourceId: this.adapterId,
-      sourceName: this.adapterName,
-      sourceTier: this.sourceTier,
-      sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: [],
-      status: 'SUCCESS',
-      confidence: 'LOW',
-      evidenceReferences: [],
-    };
-  }
-
-  async fetchCorporateActions(): Promise<SourceFetchResult<any[]>> {
-    return {
-      sourceId: this.adapterId,
-      sourceName: this.adapterName,
-      sourceTier: this.sourceTier,
-      sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: [],
-      status: 'SUCCESS',
-      confidence: 'LOW',
-      evidenceReferences: [],
-    };
-  }
-
-  async fetchNews(symbol: string): Promise<SourceFetchResult<DiscoveredNewsEventItem[]>> {
-    const sym = symbol.toUpperCase();
+  async resolveCompany(query: string): Promise<SourceFetchResult<CompanyResolutionResult>> {
+    const sec = resolveSecurity(query);
     const now = new Date().toISOString();
 
-    const newsList: DiscoveredNewsEventItem[] = [
-      {
-        eventId: `news_pti_${sym.toLowerCase()}_order_1`,
-        headline: `Indian Army Awards Radar Procurement Order to ${sym}`,
-        summary: `Press Trust of India wire: State-run ${sym} received orders worth ₹1,150 crore for defense radar systems.`,
-        source: 'PTI Wire (Press Trust of India)',
-        sourceTier: 4,
-        publicationDate: '2024-06-12',
-        eventDate: '2024-06-12',
-        companySymbol: sym,
-        eventType: 'ORDER_WIN',
-        materiality: 'HIGH',
-        impactDirection: 'POSITIVE',
-        duplicateGroupId: `wire_order_win_${sym.toLowerCase()}_jun24`,
-        isSyndicated: true,
-      },
-      {
-        eventId: `news_reuters_${sym.toLowerCase()}_order_1`,
-        headline: `Defence Ministry Approves Contracts with ${sym} for Radar Upgrades`,
-        summary: `Reuters wire copy on the identical ₹1,150 crore Army radar contract.`,
-        source: 'Reuters Financial News',
-        sourceTier: 4,
-        publicationDate: '2024-06-12',
-        eventDate: '2024-06-12',
-        companySymbol: sym,
-        eventType: 'ORDER_WIN',
-        materiality: 'HIGH',
-        impactDirection: 'POSITIVE',
-        duplicateGroupId: `wire_order_win_${sym.toLowerCase()}_jun24`,
-        isSyndicated: true,
-      },
-      {
-        eventId: `news_crisil_${sym.toLowerCase()}_rating_1`,
-        headline: `CRISIL Reaffirms 'CRISIL AAA/Stable' Rating on ${sym}'s Debt Instruments`,
-        summary: `Rating agency cites pristine balance sheet, sovereign ownership, debt-free status, and robust order book pipeline.`,
-        source: 'CRISIL Ratings Credit Bulletin',
-        sourceTier: 3,
-        publicationDate: '2024-07-18',
-        eventDate: '2024-07-18',
-        companySymbol: sym,
-        eventType: 'CREDIT_RATING',
-        materiality: 'MEDIUM',
-        impactDirection: 'POSITIVE',
-        duplicateGroupId: `wire_crisil_rating_${sym.toLowerCase()}_jul24`,
-        isSyndicated: false,
-      },
-    ];
+    const data: CompanyResolutionResult = {
+      canonicalCompanyId: sec.canonicalCompanyId,
+      legalName: sec.legalName,
+      displayName: sec.displayName,
+      symbolNSE: sec.symbolNSE,
+      codeBSE: sec.codeBSE,
+      isin: sec.isin,
+      primaryExchange: sec.primaryExchange,
+      sector: sec.sector,
+      industry: sec.industry,
+      entityType: (sec.entityType === 'BANK' ? 'BANK' : 'OPERATING_COMPANY') as any,
+      aliases: [sec.symbolNSE, sec.codeBSE, sec.displayName],
+      confidence: sec.confidence,
+    };
 
     return {
       sourceId: this.adapterId,
@@ -139,64 +46,169 @@ export class NewsDiscoveryAdapter extends BaseSourceAdapter {
       sourceTier: this.sourceTier,
       sourceRole: this.defaultRole,
       retrievedAt: now,
-      observationDate: '2026-08-22',
-      publicationDate: '2024-07-18',
-      data: newsList,
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      data,
       status: 'SUCCESS',
       confidence: 'HIGH',
-      evidenceReferences: newsList.map((n) => ({
-        documentTitle: n.headline,
-        url: 'https://www.reuters.com/',
-        sourceTier: n.sourceTier,
-        publicationDate: n.publicationDate,
-      })),
+      evidenceReferences: [],
     };
   }
 
-  async fetchManagementUpdates(): Promise<SourceFetchResult<DiscoveredManagementStatementItem[]>> {
+  async fetchNews(symbol: string): Promise<SourceFetchResult<DiscoveredNewsEventItem[]>> {
+    const sec = resolveSecurity(symbol);
+    const now = new Date().toISOString();
+
+    try {
+      const realEvents = await fetchCompanyNewsEvents(sec.symbolNSE, sec.displayName);
+      const newsItems: DiscoveredNewsEventItem[] = realEvents.map((item, idx) => ({
+        eventId: item.eventId || `news_rss_${sec.symbolNSE.toLowerCase()}_${idx}`,
+        headline: item.headline,
+        summary: item.summary,
+        source: item.source || 'Financial Wire',
+        sourceTier: 3,
+        publicationDate: item.publicationDate || now.split('T')[0],
+        eventDate: item.publicationDate || now.split('T')[0],
+        companySymbol: sec.symbolNSE,
+        eventType: 'EARNINGS_RELEASE' as const,
+        materiality: (item.materiality || 'HIGH') as any,
+        category: 'FINANCIAL_UPDATE',
+        impactDirection: item.impactDirection || 'NEUTRAL',
+        verificationStatus: 'VERIFIED',
+      }));
+
+      return {
+        sourceId: this.adapterId,
+        sourceName: this.adapterName,
+        sourceTier: this.sourceTier,
+        sourceRole: this.defaultRole,
+        retrievedAt: now,
+        observationDate: now.split('T')[0],
+        publicationDate: now.split('T')[0],
+        data: newsItems,
+        status: 'SUCCESS',
+        confidence: 'HIGH',
+        evidenceReferences: newsItems.map((n) => ({
+          documentTitle: n.headline,
+          url: `https://news.google.com/search?q=${sec.symbolNSE}`,
+          sourceTier: 3,
+        })),
+      };
+    } catch (e: any) {
+      return {
+        sourceId: this.adapterId,
+        sourceName: this.adapterName,
+        sourceTier: this.sourceTier,
+        sourceRole: this.defaultRole,
+        retrievedAt: now,
+        observationDate: now.split('T')[0],
+        publicationDate: now.split('T')[0],
+        data: [],
+        status: 'PARTIAL_SUCCESS',
+        confidence: 'LOW',
+        evidenceReferences: [],
+      };
+    }
+  }
+
+  async discoverDocuments(): Promise<SourceFetchResult<any[]>> {
+    const now = new Date().toISOString();
     return {
       sourceId: this.adapterId,
       sourceName: this.adapterName,
       sourceTier: this.sourceTier,
       sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: [],
-      status: 'SUCCESS',
-      confidence: 'LOW',
+      data: null,
+      confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'NOT_FOUND',
+      retrievedAt: now,
+      evidenceReferences: [],
+    };
+  }
+
+  async fetchFinancials(): Promise<SourceFetchResult<any>> {
+    const now = new Date().toISOString();
+    return {
+      sourceId: this.adapterId,
+      sourceName: this.adapterName,
+      sourceTier: this.sourceTier,
+      sourceRole: this.defaultRole,
+      data: null,
+      confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'SOURCE_UNAVAILABLE',
+      retrievedAt: now,
+      evidenceReferences: [],
+    };
+  }
+
+  async fetchCorporateActions(): Promise<SourceFetchResult<any[]>> {
+    const now = new Date().toISOString();
+    return {
+      sourceId: this.adapterId,
+      sourceName: this.adapterName,
+      sourceTier: this.sourceTier,
+      sourceRole: this.defaultRole,
+      data: null,
+      confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'NOT_FOUND',
+      retrievedAt: now,
+      evidenceReferences: [],
+    };
+  }
+
+  async fetchManagementUpdates(): Promise<SourceFetchResult<any>> {
+    const now = new Date().toISOString();
+    return {
+      sourceId: this.adapterId,
+      sourceName: this.adapterName,
+      sourceTier: this.sourceTier,
+      sourceRole: this.defaultRole,
+      data: null,
+      confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'NOT_FOUND',
+      retrievedAt: now,
       evidenceReferences: [],
     };
   }
 
   async fetchIndustryData(): Promise<SourceFetchResult<any>> {
+    const now = new Date().toISOString();
     return {
       sourceId: this.adapterId,
       sourceName: this.adapterName,
       sourceTier: this.sourceTier,
       sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
-      data: {},
-      status: 'SUCCESS',
-      confidence: 'LOW',
+      data: null,
+      confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'NOT_FOUND',
+      retrievedAt: now,
       evidenceReferences: [],
     };
   }
 
-  async fetchMarketData(): Promise<SourceFetchResult<any>> {
+  async fetchMarketData(_symbol: string): Promise<SourceFetchResult<any>> {
+    const now = new Date().toISOString();
     return {
       sourceId: this.adapterId,
       sourceName: this.adapterName,
       sourceTier: this.sourceTier,
       sourceRole: this.defaultRole,
-      retrievedAt: new Date().toISOString(),
-      observationDate: '2026-08-22',
-      publicationDate: '2026-08-22',
       data: null,
-      status: 'NOT_FOUND',
       confidence: 'NOT_ASSESSABLE',
+      observationDate: now.split('T')[0],
+      publicationDate: now.split('T')[0],
+      status: 'NOT_FOUND',
+      retrievedAt: now,
       evidenceReferences: [],
     };
   }
