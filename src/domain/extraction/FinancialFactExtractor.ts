@@ -1350,7 +1350,7 @@ export class FinancialFactExtractor {
             pageId: 'page_9',
             rawSnippet: 'aggregate capex of ₹16,000-18,000 crores',
           },
-          confidence: 90,
+          confidence: 91,
           verificationStatus: 'RECORDED',
           extractedAt: now,
         },

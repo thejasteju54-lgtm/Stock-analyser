@@ -5,9 +5,6 @@
  */
 
 import { XMLParser } from 'fast-xml-parser';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 export interface ResolvedSecurity {
   canonicalCompanyId: string;

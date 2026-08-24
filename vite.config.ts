@@ -136,6 +136,9 @@ function apiServerPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), apiServerPlugin()],
+  define: {
+    'process.env': {},
+  },
   server: {
     port: 5173,
     host: true,
